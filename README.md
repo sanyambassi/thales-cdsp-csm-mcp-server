@@ -14,7 +14,6 @@ A Model Context Protocol (MCP) server for managing secrets in Thales CDSP CSM Ak
   - [Prerequisites for Windows](#prerequisites-for-windows)
   - [Windows Installation Steps](#windows-installation-steps)
   - [Windows Virtual Environment Activation](#windows-virtual-environment-activation)
-  - [Windows File Operations](#windows-file-operations)
   - [Running on Windows](#running-on-windows)
   - [Windows Troubleshooting](#windows-troubleshooting)
 - [🛠️ Available Tools](#️-available-tools)
@@ -27,7 +26,6 @@ A Model Context Protocol (MCP) server for managing secrets in Thales CDSP CSM Ak
   - [JSON Format](#json-format)
   - [Key-Value Format](#key-value-format)
 - [🔐 DFC Key Support](#-dfc-key-support)
-- [🗂️ Enhanced Deletion Strategy](#️-enhanced-deletion-strategy)
 - [📚 Documentation](#-documentation)
 - [⚙️ MCP Configuration Files](#️-mcp-configuration-files)
   - [Configuration Options](#configuration-options)
@@ -211,11 +209,6 @@ notepad .env  # Edit with your credentials
 - **PowerShell**: `venv\Scripts\Activate.ps1`
 - **Git Bash**: `source venv/Scripts/activate`
 
-### Windows File Operations
-- **Copy files**: Use `copy` instead of `cp`
-- **Edit files**: Use `notepad`, `code` (VS Code), or your preferred editor
-- **Path separators**: Use backslashes `\` or forward slashes `/` (both work in modern Windows)
-
 ### Running on Windows
 ```cmd
 # Command Prompt
@@ -231,10 +224,6 @@ uv run python main.py --transport stdio
 ```
 
 ### Windows Troubleshooting
-- **PowerShell Execution Policy**: If you get execution policy errors, run:
-  ```powershell
-  Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
-  ```
 - **Path Issues**: Ensure Python and pip are in your system PATH
 - **Virtual Environment**: If activation fails, try running as Administrator
 - **Firewall**: Windows Defender may block HTTP transport mode - allow the application when prompted
@@ -259,7 +248,7 @@ uv run python main.py --transport stdio
   - Path-based filtering and item type filtering
   - Auto-pagination for large collections
   - Minimal view options for performance
-- **`set_item_state`** - Enable/disable items
+- **`set_item_state`** - Enable/disable DFC Keys
 - **`update_rotation_settings`** - Configure automatic key rotation
 
 ### Deletion Tools
@@ -267,7 +256,7 @@ uv run python main.py --transport stdio
 - **`delete_items`** - Bulk delete with enhanced proactive strategy
   - Automatic DFC key discovery and handling
   - Recursive directory deletion
-  - Scheduled deletion for security-sensitive items
+  - Scheduled deletion for DFC Keys
 
 ### Tool Features
 - **Path Normalization**: Automatic conversion to absolute paths
@@ -297,15 +286,7 @@ uv run python main.py --transport stdio
 - **AES Keys**: AES128GCM, AES256GCM, AES128SIV, AES256SIV, AES128CBC, AES256CBC
 - **RSA Keys**: RSA1024, RSA2048, RSA3072, RSA4096
 - **Auto-rotation**: Supported for AES keys (7-365 day intervals)
-- **Security**: Cannot be deleted immediately (scheduled deletion)
-
-## 🗂️ Enhanced Deletion Strategy
-
-The `delete_items` tool automatically:
-1. Discovers all DFC keys in directories
-2. Handles DFC keys according to security requirements
-3. Bulk deletes remaining items efficiently
-4. Supports both path-based and item-based deletion
+- **Security**: Delete protection, immediate deletion and scheduled deletion
 
 ## 📚 Documentation
 
