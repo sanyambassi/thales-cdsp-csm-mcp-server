@@ -95,10 +95,13 @@ cd thales-cdsp-csm-mcp-server
 python -m venv venv
 
 # Activate virtual environment
+
 # Linux/macOS:
 source venv/bin/activate
+
 # Windows (Command Prompt):
 venv\Scripts\activate.bat
+
 # Windows (PowerShell):
 venv\Scripts\Activate.ps1
 
