@@ -117,7 +117,7 @@ copy env.example .env  # Windows
 
 ### Environment Variables
 ```bash
-AKEYLESS_API_URL=https://api.akeyless.io
+AKEYLESS_API_URL=https://your-cm-hostname/akeyless-api/v2/
 AKEYLESS_ACCESS_ID=your_access_id
 AKEYLESS_ACCESS_KEY=your_access_key
 ```
