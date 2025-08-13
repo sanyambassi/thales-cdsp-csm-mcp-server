@@ -2,9 +2,56 @@
 
 A Model Context Protocol (MCP) server for managing secrets in Thales CDSP CSM Akeyless Vault. This server provides tools for creating, managing, and deleting static secrets, DFC keys, and other vault resources through the MCP protocol.
 
+## 📋 Table of Contents
+
+- [🎥 Demo](#-demo)
+- [🚀 Quick Start](#-quick-start)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+  - [Environment Variables](#environment-variables)
+  - [Running the Server](#running-the-server)
+- [🪟 Windows-Specific Instructions](#-windows-specific-instructions)
+  - [Prerequisites for Windows](#prerequisites-for-windows)
+  - [Windows Installation Steps](#windows-installation-steps)
+  - [Windows Virtual Environment Activation](#windows-virtual-environment-activation)
+  - [Windows File Operations](#windows-file-operations)
+  - [Running on Windows](#running-on-windows)
+  - [Windows Troubleshooting](#windows-troubleshooting)
+- [🛠️ Available Tools](#️-available-tools)
+  - [Secret Management](#secret-management)
+  - [Item Management](#item-management)
+  - [Deletion Tools](#deletion-tools)
+  - [Tool Features](#tool-features)
+- [📋 Secret Formats](#-secret-formats)
+  - [Text Format](#text-format)
+  - [JSON Format](#json-format)
+  - [Key-Value Format](#key-value-format)
+- [🔐 DFC Key Support](#-dfc-key-support)
+- [🗂️ Enhanced Deletion Strategy](#️-enhanced-deletion-strategy)
+- [📚 Documentation](#-documentation)
+- [⚙️ MCP Configuration Files](#️-mcp-configuration-files)
+  - [Configuration Options](#configuration-options)
+  - [Usage Instructions](#usage-instructions)
+  - [Example Setup](#example-setup)
+- [🧪 Testing](#-testing)
+  - [Manual Testing](#manual-testing)
+  - [Automated Testing](#automated-testing)
+  - [Test Scenarios](#test-scenarios)
+- [🔧 Development](#-development)
+  - [Project Structure](#project-structure)
+  - [Key Features](#key-features)
+- [📄 License](#-license)
+- [🤝 Contributing](#-contributing)
+  - [Before Contributing](#before-contributing)
+  - [How to Contribute](#how-to-contribute)
+  - [Code Standards](#code-standards)
+  - [Questions or Issues](#questions-or-issues)
+
+---
+
 ## 🎥 Demo
 
-📹 **[Watch the Demo Video - Coming Soon](https://example.com/demo-video)**
+📹 **[Watch the Demo Video - Coming Soon]()**
 
 See the Thales CSM Akeyless Vault MCP Server in action, demonstrating:
 - Protect hard coded secrets in repositories
@@ -263,6 +310,38 @@ The `delete_items` tool automatically:
 - **`docs/TRANSPORT_MODES.md`** - Transport mode configuration
 - **`docs/TESTING.md`** - Manual and automated testing guide
 
+## ⚙️ MCP Configuration Files
+
+The repository includes multiple MCP configuration files in the `config/` directory for different environments:
+
+### **Configuration Options:**
+
+- **`config/mcp-config.json`** - Cross-platform standard Python (recommended for most users)
+- **`config/mcp-config-uv.json`** - UV environment with `uv run python`
+- **`config/mcp-config-venv.json`** - Windows virtual environment with explicit paths
+- **`config/mcp-config-venv-unix.json`** - Unix/Linux virtual environment with explicit paths
+
+### **Usage Instructions:**
+
+1. **Choose the appropriate config file** based on your environment
+2. **Copy the config file** to your MCP client's configuration directory
+3. **Update the environment variables** with your actual Akeyless credentials
+4. **Ensure you're in the repository directory** when running the server (paths are relative)
+
+### **Example Setup:**
+```bash
+# Clone and navigate to repository
+git clone https://github.com/sanyambassi/thales-cdsp-csm-mcp-server
+cd thales-cdsp-csm-mcp-server
+
+# Copy your chosen config file to MCP client config directory
+# (location varies by MCP client - check your client's documentation)
+
+# Update credentials in the config file or use .env file
+cp env.example .env
+# Edit .env with your actual credentials
+```
+
 ## 🧪 Testing
 
 ### Manual Testing
@@ -313,6 +392,12 @@ src/thales_cdsp_csm_mcp_server/
 └── tools/
     ├── base_tools.py  # Base tool classes
     └── secret_tools.py # Secret management tools
+
+config/                 # MCP configuration files
+├── mcp-config.json    # Standard Python (cross-platform)
+├── mcp-config-uv.json # UV environment
+├── mcp-config-venv.json # Windows virtual environment
+└── mcp-config-venv-unix.json # Unix/Linux virtual environment
 ```
 
 ### Key Features
