@@ -65,7 +65,7 @@ See the Thales CSM Akeyless Vault MCP Server in action, demonstrating:
 ### Prerequisites
 - Python 3.8+
 - Thales CSM Akeyless Vault account
-- API Key
+- API Key for Akeyless
 
 ### Installation
 
