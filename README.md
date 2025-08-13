@@ -82,7 +82,7 @@ uv sync
 cp env.example .env  # Linux/macOS
 # or
 copy env.example .env  # Windows
-# Edit .env with your Thales API credentials
+# Edit .env with your Thales CSM credentials
 ```
 
 #### Using pip (Alternative)
@@ -109,7 +109,7 @@ pip install -r requirements.txt
 cp env.example .env  # Linux/macOS
 # or
 copy env.example .env  # Windows
-# Edit .env with your Thales API credentials
+# Edit .env with your Thales CSM credentials
 ```
 
 ### Environment Variables
