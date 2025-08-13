@@ -1,8 +1,8 @@
 {
   "mcpServers": {
     "thales-cdsp-csm-stdio-cloud": {
-      "command": "python",
-      "args": ["main.py", "--transport", "stdio"],
+      "command": "uv",
+      "args": ["run", "python", "main.py", "--transport", "stdio"],
       "env": {
         "AKEYLESS_API_URL": "https://api.akeyless.io",
         "AKEYLESS_ACCESS_ID": "your_access_id_here",
@@ -10,8 +10,8 @@
       }
     },
     "thales-cdsp-csm-stdio-onprem": {
-      "command": "python",
-      "args": ["main.py", "--transport", "stdio"],
+      "command": "uv",
+      "args": ["run", "python", "main.py", "--transport", "stdio"],
       "env": {
         "AKEYLESS_API_URL": "https://your-cm-hostname/akeyless-api/v2/",
         "AKEYLESS_ACCESS_ID": "your_access_id_here",
@@ -19,8 +19,8 @@
       }
     },
     "thales-cdsp-csm-http-cloud": {
-      "command": "python",
-      "args": ["main.py", "--transport", "streamable-http", "--host", "0.0.0.0", "--port", "8000"],
+      "command": "uv",
+      "args": ["run", "python", "main.py", "--transport", "streamable-http", "--host", "0.0.0.0", "--port", "8000"],
       "env": {
         "AKEYLESS_API_URL": "https://api.akeyless.io",
         "AKEYLESS_ACCESS_ID": "your_access_id_here",
@@ -28,8 +28,8 @@
       }
     },
     "thales-cdsp-csm-http-onprem": {
-      "command": "python",
-      "args": ["main.py", "--transport", "streamable-http", "--host", "0.0.0.0", "--port", "8000"],
+      "command": "uv",
+      "args": ["run", "python", "main.py", "--transport", "streamable-http", "--host", "0.0.0.0", "--port", "8000"],
       "env": {
         "AKEYLESS_API_URL": "https://your-cm-hostname/akeyless-api/v2/",
         "AKEYLESS_ACCESS_ID": "your_access_id_here",
