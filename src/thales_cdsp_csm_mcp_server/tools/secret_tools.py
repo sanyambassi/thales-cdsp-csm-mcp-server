@@ -290,7 +290,7 @@ class SecretTools:
                     split_level if split_level != 3 else None,
                     tag if tag else None,
                     generate_self_signed_certificate if generate_self_signed_certificate is not False else None,
-                    certificate_ttl if certificate_ttl != 30 else None,
+                    certificate_ttl if generate_self_signed_certificate else None,
                     certificate_common_name if certificate_common_name is not None else None,
                     certificate_organization if certificate_organization is not None else None,
                     certificate_country if certificate_country is not None else None,
