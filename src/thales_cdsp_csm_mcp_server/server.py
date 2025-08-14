@@ -67,9 +67,7 @@ class ThalesCDSPCSMMCPServer:
             # Configure transport-specific settings
             if transport == "streamable-http":
                 logger.info(f"HTTP server will be available at http://{host}:{port}")
-                # Set HTTP-specific configuration
-                self.server.host = host
-                self.server.port = port
+                # Configure FastMCP HTTP settings
                 self.server.streamable_http_path = "/mcp"
                 self.server.message_path = "/mcp/message"
                 self.server.json_response = True
@@ -81,7 +79,7 @@ class ThalesCDSPCSMMCPServer:
                 self.server.run(transport="stdio")
             elif transport == "streamable-http":
                 logger.info(f"Starting server with HTTP transport on {host}:{port}...")
-                self.server.run(transport="streamable-http")
+                self.server.run(transport="streamable-http", host=host, port=port)
             else:
                 logger.error(f"Unsupported transport mode: {transport}")
                 logger.info("Supported modes: 'stdio', 'streamable-http'")
