@@ -18,9 +18,7 @@ A Model Context Protocol (MCP) server for managing secrets in Thales CDSP CSM Ak
   - [Windows Troubleshooting](#windows-troubleshooting)
 - [🛠️ Available Tools](#️-available-tools)
   - [Secret Management](#secret-management)
-  - [Item Management](#item-management)
   - [Deletion Tools](#deletion-tools)
-  - [Tool Features](#tool-features)
 - [📋 Secret Formats](#-secret-formats)
   - [Text Format](#text-format)
   - [JSON Format](#json-format)
@@ -242,8 +240,6 @@ uv run python main.py --transport stdio
 - **`get_secret`** - Retrieve secret values with path resolution
 - **`update_secret_value`** - Update existing secret values
 - **`update_item`** - Update item metadata and properties
-
-### Item Management
 - **`list_items`** - List items with advanced filtering and pagination
   - Path-based filtering and item type filtering
   - Auto-pagination for large collections
@@ -257,12 +253,6 @@ uv run python main.py --transport stdio
   - Automatic DFC key discovery and handling
   - Recursive directory deletion
   - Scheduled deletion for DFC Keys
-
-### Tool Features
-- **Path Normalization**: Automatic conversion to absolute paths
-- **Format Validation**: Strict validation for all secret formats
-- **Error Handling**: Comprehensive error messages and validation
-- **Security**: DFC key protection and scheduled deletion
 
 ## 📋 Secret Formats
 
