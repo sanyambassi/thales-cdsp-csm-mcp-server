@@ -50,6 +50,7 @@ A Model Context Protocol (MCP) server for managing secrets in Thales CDSP CSM Ak
 📹 **[Watch the Demo Video - Coming Soon]()**
 
 See the Thales CSM Akeyless Vault MCP Server in action, demonstrating:
+- Deploying the MCP server and using with Cursor AI
 - Protect hard coded secrets in repositories
 - Secret creation and management
 - DFC key operations  
