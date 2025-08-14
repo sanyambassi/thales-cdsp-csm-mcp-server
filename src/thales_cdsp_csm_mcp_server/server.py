@@ -24,13 +24,13 @@ logger = logging.getLogger(__name__)
 
 
 class ThalesCDSPCSMMCPServer:
-    """MCP Server for Thales CDSP CSM Secrets Management."""
+    """MCP Server for Thales CDSP CSM (CipherTrust Secrets Management) Secrets Management."""
     
     def __init__(self):
         self.config = ThalesCDSPCSMConfig()
         self.client = ThalesCDSPCSMClient(self.config)
         self.server = FastMCP(
-            name=os.getenv("MCP_SERVER_NAME", "Thales CDSP CSM Secrets Vault"),
+            name=os.getenv("MCP_SERVER_NAME", "🔐 Thales CDSP CSM (CipherTrust Secrets Management) Secrets Vault - Enterprise Security"),
             version=os.getenv("MCP_SERVER_VERSION", "1.0.0")
         )
         self.tools = ThalesCDSPCSMTools(self.client)
@@ -54,7 +54,7 @@ class ThalesCDSPCSMMCPServer:
             port: Port for HTTP transport (default: 8000)
         """
         try:
-            logger.info("Starting Thales CDSP CSM MCP Server...")
+            logger.info("Starting Thales CDSP CSM (CipherTrust Secrets Management) MCP Server...")
             logger.info(f"Transport mode: {transport}")
             logger.info(f"API URL: {self.config.api_url}")
             logger.info(f"Access ID: {self.config.access_id[:8]}..." if self.config.access_id else "Access ID: Not set")
@@ -96,7 +96,7 @@ def main():
     """Main entry point."""
     import argparse
     
-    parser = argparse.ArgumentParser(description="Thales CDSP CSM MCP Server")
+    parser = argparse.ArgumentParser(description="Thales CDSP CSM (CipherTrust Secrets Management) MCP Server")
     parser.add_argument("--transport", choices=["stdio", "streamable-http"], default="stdio",
                        help="Transport mode (default: stdio)")
     parser.add_argument("--host", default="localhost", help="Host for HTTP transport (default: localhost)")

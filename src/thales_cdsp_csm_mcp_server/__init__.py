@@ -1,7 +1,7 @@
 """
-Thales CDSP CSM MCP Server
+Thales CDSP CSM (CipherTrust Secrets Management) MCP Server
 
-A Model Context Protocol (MCP) server for managing secrets in Thales CSM Akeyless Vault
+A Model Context Protocol (MCP) server for managing secrets in Thales CSM (CipherTrust Secrets Management) Akeyless Vault
 """
 
 from .server import ThalesCDSPCSMMCPServer

@@ -1,6 +1,8 @@
 # Thales CDSP CSM Akeyless Vault MCP Server
 
-A Model Context Protocol (MCP) server for managing secrets in Thales CDSP CSM Akeyless Vault. This server provides tools for creating, managing, and deleting static secrets, DFC keys, and other vault resources through the MCP protocol.
+**CSM = CipherTrust Secrets Management**
+
+A Model Context Protocol (MCP) server for managing secrets in Thales CDSP CSM (CipherTrust Secrets Management) Akeyless Vault. This server provides tools for creating, managing, and deleting static secrets, DFC keys, and other vault resources through the MCP protocol.
 
 ## 📋 Table of Contents
 
@@ -54,6 +56,13 @@ See the Thales CSM Akeyless Vault MCP Server in action, demonstrating:
 - Real-world usage examples (Example - Protect hard coded secrets in repositories/codebase)
 - Secret creation and management
 - DFC key operations  
+
+## 📚 Glossary
+
+- **CSM**: CipherTrust Secrets Management
+- **CDSP**: CipherTrust Data Security Platform
+- **DFC**: Distributed Fragments Key
+- **MCP**: Model Context Protocol
 
 ## 🚀 Quick Start
 

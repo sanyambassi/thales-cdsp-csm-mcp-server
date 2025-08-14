@@ -1,7 +1,7 @@
 [project]
 name = "thales-cdsp-csm-mcp-server"
 version = "1.0.0"
-description = "Thales CDSP CSM Secrets Management, powered by Akeyless, MCP Server"
+description = "Thales CDSP CSM (CipherTrust Secrets Management) Secrets Management, powered by Akeyless, MCP Server"
 authors = [
     {name = "Sanyam Bassi", email = "sanyam.bassi@thalesgroup.com"}
 ]

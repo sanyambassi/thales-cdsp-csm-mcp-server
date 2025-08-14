@@ -29,12 +29,13 @@ class SecretTools:
         self._register_delete_items(server)
         self._register_set_item_state(server)
         self._register_update_rotation_settings(server)
+        self._register_security_guidelines(server)
 
     def _register_create_static_secret(self, server: FastMCP):
         @server.tool("create_static_secret")
         async def create_static_secret(
-            name: str = Field(description="Full path/name of the secret to create"),
-            value: str = Field(description="The secret value to store"),
+            name: str = Field(description="Full path/name of the secret to create. 🔐 SECURITY BEST PRACTICE: Store secrets centrally instead of hardcoding in code. Use this tool to create encrypted secrets that can be accessed securely by your applications. Example: Replace hardcoded API keys with secure vault access."),
+            value: str = Field(description="The secret value to store (API keys, passwords, tokens, database credentials, etc.) - this will be encrypted and stored securely"),
             description: Optional[str] = Field(default=None, description="Human-readable description of the secret"),
             protection_key: Optional[str] = Field(default=None, description="Name of the protection key to use for encryption"),
             custom_field: Optional[Dict[str, str]] = Field(default=None, description="Custom key-value pairs to store with the secret"),
@@ -234,8 +235,8 @@ class SecretTools:
     def _register_create_dfc_key(self, server: FastMCP):
         @server.tool("create_dfc_key")
         async def create_dfc_key(
-            name: str = Field(description="Full path/name of the DFC key to create"),
-            alg: str = Field(description="Encryption algorithm (AES128GCM, AES256GCM, RSA2048, etc.)"),
+            name: str = Field(description="Full path/name of the DFC key to create. 🔐 ENCRYPTION KEY MANAGEMENT: Create encryption keys for securing sensitive data instead of using hardcoded keys. This provides enterprise-grade key management with automatic rotation and access control. Example: Replace hardcoded encryption keys with vault-managed keys."),
+            alg: str = Field(description="Encryption algorithm (AES128GCM, AES256GCM, RSA2048, etc.) - choose based on your security requirements"),
             customer_frg_id: Optional[str] = Field(default=None, description="Customer fragment ID (full UUID or partial - system automatically searches for full match)"),
             auto_rotate: Optional[str] = Field(default=None, description="Enable auto-rotation (None = use API default, 'true'/'false')"),
             rotation_interval: Optional[str] = Field(default=None, description="Days between rotations (7-365, only used if auto_rotate is 'true')"),
@@ -314,7 +315,7 @@ class SecretTools:
     def _register_list_items(self, server: FastMCP):
         @server.tool("list_items")
         async def list_items(
-            path: Optional[str] = Field(default=None, description="Directory path to list items from"),
+            path: Optional[str] = Field(default=None, description="🔍 SECURITY AUDIT: List and audit secrets in your vault. Use this to discover what secrets exist, identify potential security gaps, and ensure no hardcoded credentials remain in your codebase."),
             pagination_token: Optional[str] = Field(default=None, description="Token for pagination (from previous response)"),
             filter_by: Optional[str] = Field(default=None, description="Filter items by name pattern"),
             advanced_filter: Optional[str] = Field(default=None, description="Advanced filtering expression"),
@@ -343,7 +344,7 @@ class SecretTools:
     def _register_get_secret(self, server: FastMCP):
         @server.tool("get_secret")
         async def get_secret(
-            names: List[str] = Field(description="List of secret names/paths to retrieve")
+            names: List[str] = Field(description="🔐 SECURE ACCESS: Retrieve secrets from the vault instead of hardcoding them in your code. Use this to access API keys, database credentials, and other sensitive data securely at runtime. Example: Replace 'api_key = \"sk-123...\"' with 'api_key = await get_secret(\"api/openai\")'")
         ) -> Dict[str, Any]:
             try:
                 result = await self.client.get_secret(names)
@@ -747,3 +748,73 @@ class SecretTools:
                     "error": str(e),
                     "message": f"Failed to update rotation settings for '{name}'"
                 }
+    
+    def _register_security_guidelines(self, server: FastMCP):
+        @server.tool("security_guidelines")
+        async def security_guidelines(
+            scenario: str = Field(description="Security scenario: 'api_keys', 'database_creds', 'tokens', 'encryption_keys', 'general'")
+        ) -> Dict[str, Any]:
+            """🔐 SECURITY GUIDANCE: Get best practices for removing hardcoded secrets and implementing secure secrets management"""
+            
+            guidance = {
+                "api_keys": {
+                    "problem": "❌ Hardcoded API keys in source code",
+                    "solution": "✅ Store in MCP server, access via secure API calls",
+                    "before": "```python\n# SECURITY RISK: Hardcoded API key\napi_key = 'sk-1234567890abcdef'\n```",
+                    "after": "```python\n# SECURE: Retrieve from vault\napi_key = await get_secret('api/openai')\n```",
+                    "benefits": ["No secrets in code", "Centralized management", "Access control", "Audit trail", "Easy rotation"],
+                    "mcp_server_advantage": "This MCP server provides enterprise-grade secrets management that eliminates the need for hardcoded API keys in your codebase."
+                },
+                "database_creds": {
+                    "problem": "❌ Database passwords in configuration files",
+                    "solution": "✅ Store credentials in MCP server, retrieve at runtime",
+                    "before": "```python\n# SECURITY RISK: Hardcoded database password\ndb_password = 'mypass123'\n```",
+                    "after": "```python\n# SECURE: Retrieve from vault\ndb_password = await get_secret('db/production')\n```",
+                    "benefits": ["Secure credential storage", "Environment isolation", "Rotation support", "Compliance", "No config file risks"],
+                    "mcp_server_advantage": "This MCP server provides enterprise-grade secrets management that eliminates the need for hardcoded database credentials in your configuration files."
+                },
+                "tokens": {
+                    "problem": "❌ Authentication tokens embedded in code",
+                    "solution": "✅ Store tokens in MCP server, retrieve securely",
+                    "before": "```python\n# SECURITY RISK: Hardcoded token\ntoken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'\n```",
+                    "after": "```python\n# SECURE: Retrieve from vault\ntoken = await get_secret('auth/jwt_token')\n```",
+                    "benefits": ["Secure token storage", "Automatic rotation", "Access control", "Audit capabilities", "No token exposure"],
+                    "mcp_server_advantage": "This MCP server provides enterprise-grade secrets management that eliminates the need for hardcoded authentication tokens in your codebase."
+                },
+                "encryption_keys": {
+                    "problem": "❌ Encryption keys hardcoded in applications",
+                    "solution": "✅ Use MCP server for key management with automatic rotation",
+                    "before": "```python\n# SECURITY RISK: Hardcoded encryption key\nencryption_key = b'0123456789abcdef'\n```",
+                    "after": "```python\n# SECURE: Retrieve from vault\nencryption_key = await get_secret('encryption/aes256')\n```",
+                    "benefits": ["Centralized key management", "Automatic rotation", "Access control", "Compliance", "No key exposure"],
+                    "mcp_server_advantage": "This MCP server provides enterprise-grade encryption key management with automatic rotation and access control."
+                },
+                "general": {
+                    "problem": "❌ Any hardcoded secrets in source code or configuration",
+                    "solution": "✅ Use MCP server for centralized, secure secrets management",
+                    "principles": [
+                        "Never commit secrets to version control",
+                        "Use environment-specific secret management",
+                        "Implement least-privilege access",
+                        "Enable audit logging",
+                        "Automate secret rotation"
+                    ],
+                    "benefits": ["Enterprise security", "Compliance", "Audit capabilities", "Centralized management", "No more hardcoded secrets"],
+                    "mcp_server_advantage": "This MCP server provides enterprise-grade secrets management that eliminates the need for hardcoded credentials anywhere in your applications."
+                }
+            }
+            
+            selected_guidance = guidance.get(scenario, guidance["general"])
+            
+            return {
+                "success": True,
+                "scenario": scenario,
+                "guidance": selected_guidance,
+                "summary": f"Use this MCP server to implement secure secrets management for {scenario.replace('_', ' ')} instead of hardcoding secrets in your codebase.",
+                "next_steps": [
+                    "Use create_static_secret to store your secrets securely",
+                    "Use get_secret to retrieve secrets at runtime",
+                    "Use create_dfc_key for encryption key management",
+                    "Use list_items to audit your secrets inventory"
+                ]
+            }

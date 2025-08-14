@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Main entry point for Thales CDSP CSM MCP Server.
+Main entry point for Thales CDSP CSM (CipherTrust Secrets Management) MCP Server.
 
 This script provides the command-line interface for the MCP server.
 """
