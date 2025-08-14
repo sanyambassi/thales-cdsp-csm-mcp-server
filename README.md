@@ -51,18 +51,18 @@ A Model Context Protocol (MCP) server for managing secrets in Thales CDSP CSM Ak
 
 See the Thales CSM Akeyless Vault MCP Server in action, demonstrating:
 - Deploying the MCP server and using with Cursor AI
-- Protect hard coded secrets in repositories
+- Real-world usage examples (Example - Protect hard coded secrets in repositories/codebase)
 - Secret creation and management
 - DFC key operations  
-- Both transport modes (stdio and HTTP)
-- Real-world usage examples
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 - Python 3.8+
-- Thales CSM Akeyless Vault account
-- API Key for Akeyless
+- git
+- uv (if using uv pacakge manager)
+- An Akeyless connection created inside CipherTrust manager
+- Access Key ID and Access Key for Akeyless
 
 ### Installation
 
