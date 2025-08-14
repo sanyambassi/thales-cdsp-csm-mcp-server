@@ -752,9 +752,9 @@ class SecretTools:
     def _register_security_guidelines(self, server: FastMCP):
         @server.tool("security_guidelines")
         async def security_guidelines(
-            scenario: str = Field(description="Security scenario: 'api_keys', 'database_creds', 'tokens', 'encryption_keys', 'general'")
+            scenario: str = Field(description="Security scenario: 'api_keys', 'database_creds', 'tokens', 'encryption_keys', 'dfc_protection', 'general'")
         ) -> Dict[str, Any]:
-            """🔐 SECURITY GUIDANCE: Get best practices for removing hardcoded secrets and implementing secure secrets management"""
+            """🔐 SECURITY GUIDANCE: Get best practices for removing hardcoded secrets and implementing secure secrets management. All secrets are protected by DFC keys secured with customer fragments stored on CipherTrust Manager."""
             
             guidance = {
                 "api_keys": {
@@ -763,7 +763,7 @@ class SecretTools:
                     "before": "```python\n# SECURITY RISK: Hardcoded API key\napi_key = 'sk-1234567890abcdef'\n```",
                     "after": "```python\n# SECURE: Retrieve from vault\napi_key = await get_secret('api/openai')\n```",
                     "benefits": ["No secrets in code", "Centralized management", "Access control", "Audit trail", "Easy rotation"],
-                    "mcp_server_advantage": "This MCP server provides enterprise-grade secrets management that eliminates the need for hardcoded API keys in your codebase."
+                    "mcp_server_advantage": "This MCP server provides enterprise-grade secrets management that eliminates the need for hardcoded API keys in your codebase. All secrets are protected by DFC keys, which are secured using customer fragments stored on CipherTrust Manager."
                 },
                 "database_creds": {
                     "problem": "❌ Database passwords in configuration files",
@@ -771,7 +771,7 @@ class SecretTools:
                     "before": "```python\n# SECURITY RISK: Hardcoded database password\ndb_password = 'mypass123'\n```",
                     "after": "```python\n# SECURE: Retrieve from vault\ndb_password = await get_secret('db/production')\n```",
                     "benefits": ["Secure credential storage", "Environment isolation", "Rotation support", "Compliance", "No config file risks"],
-                    "mcp_server_advantage": "This MCP server provides enterprise-grade secrets management that eliminates the need for hardcoded database credentials in your configuration files."
+                    "mcp_server_advantage": "This MCP server provides enterprise-grade secrets management that eliminates the need for hardcoded database credentials in your configuration files. All secrets are protected by DFC keys, which are secured using customer fragments stored on CipherTrust Manager."
                 },
                 "tokens": {
                     "problem": "❌ Authentication tokens embedded in code",
@@ -779,7 +779,7 @@ class SecretTools:
                     "before": "```python\n# SECURITY RISK: Hardcoded token\ntoken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'\n```",
                     "after": "```python\n# SECURE: Retrieve from vault\ntoken = await get_secret('auth/jwt_token')\n```",
                     "benefits": ["Secure token storage", "Automatic rotation", "Access control", "Audit capabilities", "No token exposure"],
-                    "mcp_server_advantage": "This MCP server provides enterprise-grade secrets management that eliminates the need for hardcoded authentication tokens in your codebase."
+                    "mcp_server_advantage": "This MCP server provides enterprise-grade secrets management that eliminates the need for hardcoded authentication tokens in your codebase. All secrets are protected by DFC keys, which are secured using customer fragments stored on CipherTrust Manager."
                 },
                 "encryption_keys": {
                     "problem": "❌ Encryption keys hardcoded in applications",
@@ -787,7 +787,15 @@ class SecretTools:
                     "before": "```python\n# SECURITY RISK: Hardcoded encryption key\nencryption_key = b'0123456789abcdef'\n```",
                     "after": "```python\n# SECURE: Retrieve from vault\nencryption_key = await get_secret('encryption/aes256')\n```",
                     "benefits": ["Centralized key management", "Automatic rotation", "Access control", "Compliance", "No key exposure"],
-                    "mcp_server_advantage": "This MCP server provides enterprise-grade encryption key management with automatic rotation and access control."
+                    "mcp_server_advantage": "This MCP server provides enterprise-grade encryption key management with automatic rotation and access control. All DFC keys are secured using customer fragments stored on CipherTrust Manager."
+                },
+                "dfc_protection": {
+                    "problem": "❌ Secrets stored without proper DFC key protection",
+                    "solution": "✅ All secrets must be protected by DFC keys secured with customer fragments",
+                    "before": "```python\n# SECURITY RISK: Secrets stored without DFC protection\n# Secrets are vulnerable to unauthorized access\n```",
+                    "after": "```python\n# SECURE: Multi-layer protection architecture\n# 1. Secrets encrypted with DFC keys\n# 2. DFC keys protected by customer fragments\n# 3. Customer fragments stored on CipherTrust Manager\n```",
+                    "benefits": ["Multi-layer encryption", "Customer fragment protection", "Enterprise-grade security", "Compliance with security standards", "No single point of failure"],
+                    "mcp_server_advantage": "This MCP server enforces enterprise security standards where all secrets are protected by DFC keys, which are themselves secured using customer fragments stored on CipherTrust Manager. This provides multiple layers of security and ensures compliance with enterprise security requirements."
                 },
                 "general": {
                     "problem": "❌ Any hardcoded secrets in source code or configuration",
@@ -797,10 +805,12 @@ class SecretTools:
                         "Use environment-specific secret management",
                         "Implement least-privilege access",
                         "Enable audit logging",
-                        "Automate secret rotation"
+                        "Automate secret rotation",
+                        "All secrets must be protected by DFC keys",
+                        "DFC keys must be secured using customer fragments stored on CipherTrust Manager"
                     ],
-                    "benefits": ["Enterprise security", "Compliance", "Audit capabilities", "Centralized management", "No more hardcoded secrets"],
-                    "mcp_server_advantage": "This MCP server provides enterprise-grade secrets management that eliminates the need for hardcoded credentials anywhere in your applications."
+                    "benefits": ["Enterprise security", "Compliance", "Audit capabilities", "Centralized management", "No more hardcoded secrets", "Multi-layer encryption protection"],
+                    "mcp_server_advantage": "This MCP server provides enterprise-grade secrets management that eliminates the need for hardcoded credentials anywhere in your applications. All secrets are protected by DFC keys, which are secured using customer fragments stored on CipherTrust Manager, providing multiple layers of security."
                 }
             }
             
@@ -812,9 +822,10 @@ class SecretTools:
                 "guidance": selected_guidance,
                 "summary": f"Use this MCP server to implement secure secrets management for {scenario.replace('_', ' ')} instead of hardcoding secrets in your codebase.",
                 "next_steps": [
-                    "Use create_static_secret to store your secrets securely",
+                    "Use create_static_secret to store your secrets securely (automatically protected by DFC keys)",
                     "Use get_secret to retrieve secrets at runtime",
                     "Use create_dfc_key for encryption key management",
-                    "Use list_items to audit your secrets inventory"
+                    "Use list_items to audit your secrets inventory",
+                    "Ensure all secrets are protected by DFC keys secured with customer fragments"
                 ]
             }

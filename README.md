@@ -256,6 +256,7 @@ uv run python main.py --transport stdio
   - Minimal view options for performance
 - **`set_item_state`** - Enable/disable DFC Keys
 - **`update_rotation_settings`** - Configure automatic key rotation
+- **`security_guidelines`** - Security guidelines for different secret types and DFC protection
 
 ### Deletion Tools
 - **`delete_item`** - Delete single items with DFC key handling
