@@ -237,8 +237,8 @@ class SecretTools:
             name: str = Field(description="Full path/name of the DFC key to create"),
             alg: str = Field(description="Encryption algorithm (AES128GCM, AES256GCM, RSA2048, etc.)"),
             customer_frg_id: Optional[str] = Field(default=None, description="Customer fragment ID (full UUID or partial - system automatically searches for full match)"),
-            auto_rotate: Optional[bool] = Field(default=None, description="Enable auto-rotation (None = use API default)"),
-            rotation_interval: Optional[int] = Field(default=None, ge=7, le=365, description="Days between rotations (7-365, only used if auto_rotate is True)"),
+            auto_rotate: Optional[str] = Field(default=None, description="Enable auto-rotation (None = use API default, 'true'/'false')"),
+            rotation_interval: Optional[str] = Field(default=None, description="Days between rotations (7-365, only used if auto_rotate is 'true')"),
             delete_protection: bool = Field(default=False, description="Protection from accidental deletion"),
             split_level: int = Field(default=3, ge=3, le=4, description="Number of fragments (3 or 4)"),
             tag: List[str] = Field(default_factory=list, description="List of tags attached to this DFC key"),
@@ -266,23 +266,21 @@ class SecretTools:
                 if split_level not in [3, 4]:
                     raise ValueError("split_level must be 3 or 4")
                 
-                if rotation_interval is not None and not auto_rotate:
-                    raise ValueError("auto_rotate must be True when setting rotation_interval")
+                if rotation_interval is not None and auto_rotate != "true":
+                    raise ValueError("auto_rotate must be 'true' when setting rotation_interval")
                 
-                if auto_rotate and not alg.startswith('AES'):
+                if auto_rotate == "true" and not alg.startswith('AES'):
                     raise ValueError(f"Auto-rotation is only supported for AES keys, not {alg}")
                 
                 if generate_self_signed_certificate and certificate_ttl is None:
                     raise ValueError("certificate_ttl is required when generate_self_signed_certificate is True")
                 
-                rotation_interval_str = str(rotation_interval) if rotation_interval is not None else None
-                
                 result = await self.client.create_dfc_key(
                     name, alg, 
                     final_customer_frg_id,
                     description if description is not None else None,
-                    auto_rotate,  # Pass as-is (None, True, or False)
-                    rotation_interval_str if rotation_interval is not None else None,
+                    auto_rotate,  # Pass string directly
+                    rotation_interval,  # Pass string directly
                     delete_protection if delete_protection is not False else None,
                     split_level if split_level != 3 else None,
                     tag if tag else None,
@@ -698,12 +696,24 @@ class SecretTools:
         async def update_rotation_settings(
             name: str = Field(description="Full path/name of the item to update rotation settings"),
             auto_rotate: bool = Field(default=False, description="Whether to automatically rotate every rotation_interval days"),
-            rotation_interval: int = Field(default=30, ge=7, le=365, description="Days between rotations (7-365)"),
+            rotation_interval: Optional[str] = Field(default=None, description="Days between rotations (7-365)"),
             rotation_event_in: List[str] = Field(default_factory=list, description="Days before rotation to notify"),
             json: bool = Field(default=False, description="Set output format to JSON")
         ) -> Dict[str, Any]:
             try:
-                if rotation_interval is not None and not auto_rotate:
+                # Convert and validate rotation_interval if provided
+                rotation_interval_int = None
+                if rotation_interval is not None:
+                    try:
+                        rotation_interval_int = int(rotation_interval)
+                        if rotation_interval_int < 7 or rotation_interval_int > 365:
+                            raise ValueError("rotation_interval must be between 7 and 365 days")
+                    except ValueError as e:
+                        if "invalid literal" in str(e):
+                            raise ValueError("rotation_interval must be a valid integer")
+                        raise
+                
+                if rotation_interval_int is not None and not auto_rotate:
                     raise ValueError("auto_rotate must be true when setting rotation_interval")
                 
                 try:
@@ -716,14 +726,14 @@ class SecretTools:
                         if auto_rotate and not item_type.startswith('AES'):
                             raise ValueError(f"Auto-rotation is only supported for AES keys, not {item_type}. RSA keys and other key types do not support rotation.")
                         
-                        if auto_rotate and rotation_interval is None:
+                        if auto_rotate and rotation_interval_int is None:
                             raise ValueError("rotation_interval is required when enabling auto_rotate")
                             
                 except Exception as list_error:
                     logger.warning(f"Could not validate item type for rotation settings: {list_error}")
                 
                 result = await self.client.update_rotation_settings(
-                    name, auto_rotate, rotation_interval, rotation_event_in, json
+                    name, auto_rotate, rotation_interval_int, rotation_event_in, json
                 )
                 return {
                     "success": True,

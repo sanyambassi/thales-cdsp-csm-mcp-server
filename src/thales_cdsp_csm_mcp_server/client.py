@@ -359,10 +359,10 @@ class ThalesCDSPCSMClient:
         
         # Handle auto-rotation parameters - only send if explicitly provided
         if auto_rotate is not None:
-            data["auto-rotate"] = str(auto_rotate).lower()
-            # Only send rotation_interval if auto_rotate is True
-            if auto_rotate and rotation_interval is not None:
-                data["rotation-interval"] = rotation_interval
+            data["auto-rotate"] = auto_rotate  # API expects string "true"/"false"
+            # Only send rotation_interval if auto_rotate is "true"
+            if auto_rotate == "true" and rotation_interval is not None:
+                data["rotation-interval"] = rotation_interval  # API expects string
         # If auto_rotate not specified, don't send any rotation parameters
         # Let the API use its defaults (typically auto-rotation enabled with default period)
         
@@ -638,7 +638,8 @@ class ThalesCDSPCSMClient:
         }
         
         # Add optional parameters if provided
-        if rotation_interval is not None:
+        # Only send rotation_interval when auto_rotate is True
+        if auto_rotate and rotation_interval is not None:
             data["rotation-interval"] = rotation_interval
         if rotation_event_in:
             data["rotation-event-in"] = rotation_event_in
