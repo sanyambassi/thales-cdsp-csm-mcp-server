@@ -22,6 +22,7 @@ class ThalesCDSPCSMConfig(BaseModel):
     api_url: str = Field(default_factory=lambda: os.getenv("AKEYLESS_API_URL", "https://api.akeyless.io"))
     access_id: str = Field(default_factory=lambda: os.getenv("AKEYLESS_ACCESS_ID", ""))
     access_key: str = Field(default_factory=lambda: os.getenv("AKEYLESS_ACCESS_KEY", ""))
+    verify_ssl: bool = Field(default_factory=lambda: os.getenv("AKEYLESS_VERIFY_SSL", "true").lower() == "true")
 
 
 class ThalesCDSPCSMClient:
@@ -31,7 +32,10 @@ class ThalesCDSPCSMClient:
         self.config = config
         self._token = None
         self._token_expiry = 0
-        self._client = httpx.AsyncClient(timeout=30.0)
+        self._client = httpx.AsyncClient(
+            timeout=30.0,
+            verify=self.config.verify_ssl
+        )
         
         # Validate configuration
         if not config.access_id or not config.access_key:
