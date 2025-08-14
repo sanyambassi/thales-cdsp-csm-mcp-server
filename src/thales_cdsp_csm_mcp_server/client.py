@@ -192,7 +192,7 @@ class ThalesCDSPCSMClient:
             data["description"] = description
         if protection_key:
             data["protection_key"] = protection_key
-        if delete_protection:
+        if delete_protection is not None:
             data["delete_protection"] = delete_protection
         if tags:
             data["tags"] = tags
@@ -316,8 +316,8 @@ class ThalesCDSPCSMClient:
             return None
     
     async def create_dfc_key(self, name: str, alg: str, customer_frg_id: Optional[str] = None,
-                             description: Optional[str] = None, auto_rotate: Optional[bool] = None,
-                             rotation_interval: Optional[int] = None, delete_protection: Optional[bool] = None,
+                             description: Optional[str] = None, auto_rotate: Optional[str] = None,
+                             rotation_interval: Optional[str] = None, delete_protection: Optional[str] = None,
                              split_level: Optional[int] = None, tag: Optional[List[str]] = None,
                              generate_self_signed_certificate: Optional[bool] = None,
                              certificate_ttl: Optional[int] = None, certificate_common_name: Optional[str] = None,
@@ -371,13 +371,13 @@ class ThalesCDSPCSMClient:
         # Let the API use its defaults (typically auto-rotation enabled with default period)
         
         if delete_protection is not None:
-            data["delete-protection"] = str(delete_protection).lower()
+            data["delete_protection"] = delete_protection
         if split_level:
             data["split-level"] = split_level
         if tag:
             data["tag"] = tag
         if generate_self_signed_certificate is not None:
-            data["generate-self-signed-certificate"] = str(generate_self_signed_certificate).lower()
+            data["generate-self-signed-certificate"] = generate_self_signed_certificate
         if certificate_ttl:
             data["certificate-ttl"] = certificate_ttl
         if certificate_common_name:
@@ -684,7 +684,7 @@ class ThalesCDSPCSMClient:
         if rm_tags:
             data["rm-tag"] = rm_tags
         if delete_protection is not None:
-            data["delete_protection"] = str(delete_protection).lower()
+            data["delete_protection"] = delete_protection
         if keep_prev_version is not None:
             data["keep-prev-version"] = str(keep_prev_version).lower()
         

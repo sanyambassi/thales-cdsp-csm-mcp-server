@@ -80,7 +80,7 @@ class SecretTools:
 
                 result = await self.client.create_static_secret(
                     name, value, description, protection_key, format, accessibility,
-                    delete_protection, multiline_value, json, tags, custom_field,
+                    str(delete_protection).lower() if delete_protection is not False else None, multiline_value, json, tags, custom_field,
                     inject_url, password, username, change_event, max_versions, metadata
                 )
                 return {
@@ -243,7 +243,7 @@ class SecretTools:
             delete_protection: bool = Field(default=False, description="Protection from accidental deletion"),
             split_level: int = Field(default=3, ge=3, le=4, description="Number of fragments (3 or 4)"),
             tag: List[str] = Field(default_factory=list, description="List of tags attached to this DFC key"),
-            generate_self_signed_certificate: bool = Field(default=False, description="Generate self-signed certificate"),
+            generate_self_signed_certificate: bool = Field(default=False, description="Whether to generate a self signed certificate with the key. If set, --certificate-ttl must be provided."),
             certificate_ttl: int = Field(default=30, ge=1, le=365, description="Certificate TTL in days (1-365)"),
             expiration_event_in: List[str] = Field(default_factory=list, description="Days before expiration to notify"),
             rotation_event_in: List[str] = Field(default_factory=list, description="Days before rotation to notify"),
@@ -273,8 +273,12 @@ class SecretTools:
                 if auto_rotate == "true" and not alg.startswith('AES'):
                     raise ValueError(f"Auto-rotation is only supported for AES keys, not {alg}")
                 
-                if generate_self_signed_certificate and certificate_ttl is None:
-                    raise ValueError("certificate_ttl is required when generate_self_signed_certificate is True")
+                # Validation: certificate_ttl must be explicitly provided when generating certificate
+                # Note: certificate_ttl has default=30, so we check if user explicitly wants certificate
+                if generate_self_signed_certificate:
+                    # Ensure certificate_ttl is reasonable when generating certificate
+                    if certificate_ttl < 1 or certificate_ttl > 365:
+                        raise ValueError("certificate_ttl must be between 1 and 365 days when generate_self_signed_certificate is True")
                 
                 result = await self.client.create_dfc_key(
                     name, alg, 
@@ -282,7 +286,7 @@ class SecretTools:
                     description if description is not None else None,
                     auto_rotate,  # Pass string directly
                     rotation_interval,  # Pass string directly
-                    delete_protection if delete_protection is not False else None,
+                    str(delete_protection).lower() if delete_protection is not False else None,
                     split_level if split_level != 3 else None,
                     tag if tag else None,
                     generate_self_signed_certificate if generate_self_signed_certificate is not False else None,
@@ -419,7 +423,7 @@ class SecretTools:
         ) -> Dict[str, Any]:
             try:
                 result = await self.client.update_item(
-                    name, new_name, description, accessibility, delete_protection, change_event,
+                    name, new_name, description, accessibility, str(delete_protection).lower() if delete_protection is not False else None, change_event,
                     max_versions, add_tags, rm_tags, json, rotate_after_disconnect,
                     expiration_event_in, rotation_event_in, provider_type, cert_file_data,
                     certificate_format, host_provider, new_metadata
