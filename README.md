@@ -13,10 +13,25 @@ Simple MCP server for Thales CipherTrust Secrets Management, powered by Akeyless
 ## ⚡ **Quick Start**
 
 ### **1. Install**
+
+#### **Option A: Using pip (Traditional)**
 ```bash
 git clone https://github.com/sanyambassi/thales-cdsp-csm-mcp-server
 cd thales-cdsp-csm-mcp-server
 pip install -r requirements.txt
+```
+
+#### **Option B: Using uv (Recommended)**
+```bash
+# Install uv if you don't have it
+pip install uv
+
+# Clone and setup
+git clone https://github.com/sanyambassi/thales-cdsp-csm-mcp-server
+cd thales-cdsp-csm-mcp-server
+
+# Install dependencies (creates .venv automatically)
+uv sync
 ```
 
 ### **2. Configure**
@@ -29,12 +44,23 @@ LOG_LEVEL=INFO
 ```
 
 ### **3. Run**
+
+#### **Using pip (Traditional)**
 ```bash
 # stdio mode
 python main.py
 
 # HTTP mode 
 python main.py --transport streamable-http --host localhost --port 8000
+```
+
+#### **Using uv (Recommended)**
+```bash
+# stdio mode
+uv run python main.py
+
+# HTTP mode 
+uv run python main.py --transport streamable-http --host localhost --port 8000
 ```
 
 ## 🛠️ **Available Tools**
@@ -53,6 +79,7 @@ python main.py --transport streamable-http --host localhost --port 8000
 ```bash
 # Run tests
 python tests/run_tests.py
+python.exe tests\test_mcp_protocol.py
 
 # Test health endpoint (HTTP mode)
 curl http://localhost:8000/health
@@ -113,12 +140,12 @@ curl http://localhost:8000/health
 ### **Configuration Parameters**
 - **`env`**: Environment variables for Akeyless authentication and logging
 - **`command`**: Python executable to run the server
-- **`args`**: Command line arguments for the server (must include `--transport stdio` for MCP clients)
+- **`args`**: Command line arguments for the server
 
 ### **⚠️ Important Notes**
 - **Full Path Required**: `args` must include the full absolute path to `main.py`
 - **Windows Paths**: Use double backslashes `\\` in Windows paths (e.g., `C:\\thales-cdsp-csm-mcp-server\\main.py`)
-- **Unix Paths**: Use forward slashes `/` in Unix/Linux paths (e.g., `/home/user/akeyless-secrets-vault/main.py`)
+- **Unix Paths**: Use forward slashes `/` in Unix/Linux paths (e.g., `/home/user/thales-cdsp-csm-mcp-server/main.py`)
 
 ### **Configuration Templates**
 - **[config/mcp-config-uv.json](config/mcp-config-uv.json)** - UV package manager setup
