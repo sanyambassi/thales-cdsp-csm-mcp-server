@@ -10,6 +10,15 @@ Simple MCP server for Thales CipherTrust Secrets Management, powered by Akeyless
 - **Security**: Guidelines and best practices
 - **MCP Protocol**: Model Context Protocol compliance
 
+## 🎬 **Demo Video**
+
+> **📹 Coming Soon!** Watch how to integrate this MCP server with AI assistants and manage secrets effortlessly.
+
+> *Demo will showcase:*
+> - Setting up Cursor AI and Claude Desktop integration
+> - Creating and managing secrets through AI chat
+> - Security compliance workflows
+
 ## ⚡ **Quick Start**
 
 ### **1. Install**
