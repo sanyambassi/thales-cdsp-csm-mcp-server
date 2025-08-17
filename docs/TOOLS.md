@@ -123,7 +123,7 @@ manage_auth action=delete name=/my/api_key
 ## 🔄 **Secret and Key Rotation**
 
 ### **Primary Tool: `manage_rotation`**
-Manage automatic rotation settings for secrets and encryption keys to maintain security compliance.
+Manage automatic rotation settings for secrets and DFC keys to maintain security compliance.
 
 #### **Rotation Operations**
 ```bash

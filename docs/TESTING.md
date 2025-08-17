@@ -161,5 +161,3 @@ curl http://localhost:8000/health
 - **Authentication failed**: Verify credentials in `.env` file
 - **Tools not found**: Restart server after configuration changes
 - **HTTP errors**: Check port availability and firewall settings
-
- 
