@@ -1,33 +1,34 @@
-# Documentation Directory
+# Documentation Overview
 
-This directory contains documentation for the Thales CipherTrust Secrets Management MCP Server.
+Docs for the Thales CSM MCP Server.
 
-## 📁 Contents
+## 📚 **Available Docs**
 
-- **README.md** - This file (directory overview)
-- **TOOLS.md** - Comprehensive tools reference with examples and parameters
-- **TRANSPORT_MODES.md** - Available transport modes (stdio, HTTP) and configuration
-- **MANUAL_TEST.md** - Manual testing procedures and examples
-- **TESTING.md** - Testing guidelines and procedures
-- **MODULAR_ARCHITECTURE.md** - System architecture and design documentation
+| Document | Purpose | What You'll Find |
+|----------|---------|------------------|
+| **[TESTING.md](TESTING.md)** | How to test | Run test script |
+| **[TRANSPORT_MODES.md](TRANSPORT_MODES.md)** | How to run | stdio vs HTTP modes |
+| **[TOOLS.md](TOOLS.md)** | What tools do | Tool reference, examples |
+| **[TESTING.md](TESTING.md)** | How to test | Complete testing guide |
 
-## 📁 Project Structure
+## 🚀 **Quick Start**
 
-- **logs/** - Application logs (auto-rotated, gitignored)
-- **config/** - MCP server configuration files
-- **src/** - Source code
-- **tests/** - Test files
-- **docs/** - Documentation
+1. **Setup**: Install dependencies, configure `.env`
+2. **Run**: `python main.py --transport stdio` or `--transport streamable-http`
+3. **Test**: Use the testing guides above
+4. **Use**: Integrate with MCP clients or HTTP apps
 
-## 📋 MCP Protocol Support
+## 🎯 **What This Server Does**
 
-This server supports multiple MCP protocol versions for backward compatibility:
-- **Latest**: `2025-06-18` (June 2025 specification)
-- **Backward**: `2025-03-26` (March 2025 specification)
+- **Secrets Management**: Create, read, update, delete secrets
+- **Key Management**: DFC encryption keys (AES, RSA)
+- **Authentication**: Access control and policies
+- **Security**: Guidelines and best practices
+- **MCP Protocol**: Model Context Protocol compliance
 
-## 📚 Quick Reference
+## 🔧 **Need Help?**
 
-- **For tool usage**: See [TOOLS.md](TOOLS.md)
-- **For transport setup**: See [TRANSPORT_MODES.md](TRANSPORT_MODES.md)
-- **For testing**: See [TESTING.md](TESTING.md)
-- **For architecture**: See [MODULAR_ARCHITECTURE.md](MODULAR_ARCHITECTURE.md) 
+- Check the specific doc for your question
+- Run tests to verify functionality
+- Check server logs for errors
+- Ensure credentials are configured
