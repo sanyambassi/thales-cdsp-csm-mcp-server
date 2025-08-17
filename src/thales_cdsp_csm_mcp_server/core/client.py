@@ -5,24 +5,16 @@ This module provides a client for interacting with the Thales CSM Akeyless Vault
 It handles authentication, token management, and provides methods for all secret operations.
 """
 
-import os
 import logging
 import time
 from typing import Dict, Any, List, Optional
-from pydantic import BaseModel, Field
 import httpx
 import json
 
+from .config import ThalesCDSPCSMConfig
+from .exceptions import AuthenticationError, APIError, ValidationError
+
 logger = logging.getLogger(__name__)
-
-
-class ThalesCDSPCSMConfig(BaseModel):
-    """Configuration for Thales CDSP CSM client."""
-    
-    api_url: str = Field(default_factory=lambda: os.getenv("AKEYLESS_API_URL", "https://api.akeyless.io"))
-    access_id: str = Field(default_factory=lambda: os.getenv("AKEYLESS_ACCESS_ID", ""))
-    access_key: str = Field(default_factory=lambda: os.getenv("AKEYLESS_ACCESS_KEY", ""))
-    verify_ssl: bool = Field(default_factory=lambda: os.getenv("AKEYLESS_VERIFY_SSL", "true").lower() == "true")
 
 
 class ThalesCDSPCSMClient:
@@ -39,7 +31,7 @@ class ThalesCDSPCSMClient:
         
         # Validate configuration
         if not config.access_id or not config.access_key:
-            raise ValueError("AKEYLESS_ACCESS_ID and AKEYLESS_ACCESS_KEY must be set")
+            raise ValidationError("AKEYLESS_ACCESS_ID and AKEYLESS_ACCESS_KEY must be set")
     
     async def __aenter__(self):
         """Async context manager entry."""
@@ -95,7 +87,7 @@ class ThalesCDSPCSMClient:
             self._token_expiry = time.time() + 3600
         except Exception as e:
             logger.error(f"Failed to refresh authentication token: {e}")
-            raise
+            raise AuthenticationError(f"Failed to refresh authentication token: {e}")
     
     async def _get_auth_token(self) -> str:
         """Get authentication token from Thales CSM Akeyless Vault."""
@@ -110,13 +102,13 @@ class ThalesCDSPCSMClient:
             result = response.json()
             
             if "token" not in result:
-                raise ValueError("No token in authentication response")
+                raise AuthenticationError("No token in authentication response")
             
             return result["token"]
             
         except Exception as e:
             logger.error(f"Authentication failed: {e}")
-            raise
+            raise AuthenticationError(f"Authentication failed: {e}")
     
     async def _make_request(self, command: str, data: Dict[str, Any]) -> Dict[str, Any]:
         """Make a request to the Thales CSM Akeyless Vault API."""
@@ -139,10 +131,10 @@ class ThalesCDSPCSMClient:
         except httpx.HTTPStatusError as e:
             error_data = self._parse_error_response(e.response)
             logger.error(f"HTTP error {e.response.status_code}: {error_data}")
-            raise ValueError(error_data)
+            raise APIError(error_data, e.response.status_code, e.response.json() if e.response.content else None)
         except Exception as e:
             logger.error(f"Request failed: {e}")
-            raise
+            raise APIError(f"Request failed: {e}")
     
     def _parse_error_response(self, response: httpx.Response) -> str:
         """Parse error response and return user-friendly message."""
@@ -164,6 +156,98 @@ class ThalesCDSPCSMClient:
         except Exception:
             return f"HTTP {response.status_code} error"
     
+    def _looks_like_key_value(self, value: str) -> bool:
+        """
+        Detect if a string looks like key-value format.
+        
+        Args:
+            value: String to check
+            
+        Returns:
+            True if it appears to be key-value format
+        """
+        if not value or not isinstance(value, str):
+            return False
+            
+        # Check for key=value pattern
+        if '=' not in value:
+            return False
+            
+        # Count key=value pairs
+        pairs = value.replace(';', ',').replace('\n', ',').split(',')
+        key_value_count = 0
+        total_pairs = 0
+        
+        for pair in pairs:
+            pair = pair.strip()
+            if not pair:
+                continue
+                
+            total_pairs += 1
+            if '=' in pair:
+                key, val = pair.split('=', 1)
+                if key.strip() and val.strip():
+                    key_value_count += 1
+        
+        # If more than 50% of pairs are key=value format, consider it key-value
+        if total_pairs > 0 and (key_value_count / total_pairs) >= 0.5:
+            return True
+            
+        return False
+
+    def _convert_key_value_to_json(self, key_value_str: str) -> str:
+        """
+        Convert key-value string format to JSON format.
+        
+        Supports formats like:
+        - key1=value1;key2=value2
+        - key1=value1,key2=value2
+        - key1=value1\nkey2=value2
+        
+        Args:
+            key_value_str: String in key=value format
+            
+        Returns:
+            JSON string representation
+        """
+        try:
+            # Try different separators
+            if ';' in key_value_str:
+                pairs = key_value_str.split(';')
+            elif ',' in key_value_str:
+                pairs = key_value_str.split(',')
+            elif '\n' in key_value_str:
+                pairs = key_value_str.split('\n')
+            else:
+                # Single key-value pair
+                pairs = [key_value_str]
+            
+            result = {}
+            for pair in pairs:
+                pair = pair.strip()
+                if not pair:
+                    continue
+                    
+                if '=' in pair:
+                    key, value = pair.split('=', 1)
+                    key = key.strip()
+                    value = value.strip()
+                    
+                    # Handle quoted values
+                    if (value.startswith('"') and value.endswith('"')) or \
+                       (value.startswith("'") and value.endswith("'")):
+                        value = value[1:-1]
+                    
+                    if key:  # Only add if key is not empty
+                        result[key] = value
+            
+            return json.dumps(result)
+            
+        except Exception as e:
+            logger.warning(f"Failed to convert key-value string to JSON: {e}")
+            # Return original string if conversion fails
+            return key_value_str
+
     async def create_static_secret(self, name: str, value: str, description: Optional[str] = None, 
                                    protection_key: Optional[str] = None, format: str = "text",
                                    accessibility: str = "regular", delete_protection: Optional[str] = None,
@@ -177,9 +261,17 @@ class ThalesCDSPCSMClient:
         
         logger.info(f"Creating static secret at full path: {full_path}...")
         
+        # Auto-convert key-value format to JSON if needed
+        processed_value = value
+        if format == "key-value" or self._looks_like_key_value(value):
+            processed_value = self._convert_key_value_to_json(value)
+            logger.info(f"Auto-detected key-value format and converted to JSON: {processed_value}")
+            # Update format to key-value for consistency
+            format = "key-value"
+        
         data = {
             "name": full_path,  # Thales CSM Akeyless Vault uses 'name' not 'path'
-            "value": value,
+            "value": processed_value,
             "type": "generic",  # Thales CSM Akeyless Vault expects 'generic' not 'static-secret'
             "format": format,
             "accessibility": accessibility,
@@ -193,7 +285,9 @@ class ThalesCDSPCSMClient:
         if protection_key:
             data["protection_key"] = protection_key
         if delete_protection is not None:
-            data["delete_protection"] = delete_protection
+            # Convert boolean to string format expected by API
+            # True -> "1", False -> "0"
+            data["delete_protection"] = "1" if delete_protection else "0"
         if tags:
             data["tags"] = tags
         if custom_field:
@@ -371,7 +465,9 @@ class ThalesCDSPCSMClient:
         # Let the API use its defaults (typically auto-rotation enabled with default period)
         
         if delete_protection is not None:
-            data["delete_protection"] = delete_protection
+            # Convert boolean to string format expected by API
+            # True -> "1", False -> "0"
+            data["delete_protection"] = "1" if delete_protection else "0"
         if split_level:
             data["split-level"] = split_level
         if tag:
@@ -403,9 +499,38 @@ class ThalesCDSPCSMClient:
         if metadata:
             data["metadata"] = metadata
         
-        result = await self._make_request("create-dfc-key", data)
-        logger.info(f"DFC key '{name}' created successfully")
-        return result
+        try:
+            result = await self._make_request("create-dfc-key", data)
+            logger.info(f"DFC key '{name}' created successfully")
+            return result
+        except Exception as e:
+            # Enhance error messages for common DFC key creation issues
+            error_msg = str(e)
+            if "auto-rotate" in error_msg.lower() and "rsa" in alg.lower():
+                enhanced_error = (
+                    f"❌ RSA key creation failed due to auto-rotation incompatibility!\n"
+                    f"  • Key type: {alg}\n"
+                    f"  • Error: {error_msg}\n"
+                    f"  • Reason: RSA keys (asymmetric) do not support auto-rotation\n"
+                    f"  • Solution: Set auto_rotate to 'false' for RSA keys, or use AES key types for auto-rotation"
+                )
+                logger.error(enhanced_error)
+                raise ValueError(enhanced_error)
+            elif "rotation" in error_msg.lower():
+                enhanced_error = (
+                    f"❌ DFC key creation failed due to rotation configuration!\n"
+                    f"  • Key type: {alg}\n"
+                    f"  • Error: {error_msg}\n"
+                    f"  • Common issues:\n"
+                    f"    - RSA keys don't support auto-rotation\n"
+                    f"    - rotation_interval requires auto_rotate='true'\n"
+                    f"    - Invalid rotation period (should be 7-365 days)"
+                )
+                logger.error(enhanced_error)
+                raise ValueError(enhanced_error)
+            else:
+                # Re-raise the original error
+                raise
     
     async def list_items(self, path: Optional[str] = None, auto_pagination: bool = True, pagination_token: Optional[str] = None, 
                           filter_by: Optional[str] = None, advanced_filter: Optional[str] = None, minimal_view: Optional[bool] = None, 
@@ -509,7 +634,7 @@ class ThalesCDSPCSMClient:
             data["item"] = full_items
             logger.info(f"Deleting specific items: {full_items}")
         else:
-            raise ValueError("Either 'path' or 'items' must be provided")
+            raise ValidationError("Either 'path' or 'items' must be provided")
         
         result = await self._make_request("delete-items", data)
         return result
@@ -580,8 +705,10 @@ class ThalesCDSPCSMClient:
             data["new-name"] = new_name
         if description:
             data["description"] = description
-        if delete_protection:
-            data["delete_protection"] = delete_protection
+        if delete_protection is not None:
+            # Convert boolean to string format expected by API
+            # True -> "1", False -> "0"
+            data["delete_protection"] = "1" if delete_protection else "0"
         if change_event:
             data["change-event"] = change_event
         if max_versions:
@@ -642,8 +769,8 @@ class ThalesCDSPCSMClient:
         }
         
         # Add optional parameters if provided
-        # Only send rotation_interval when auto_rotate is True
-        if auto_rotate and rotation_interval is not None:
+        # Allow rotation_interval to be set independently (API will handle validation)
+        if rotation_interval is not None:
             data["rotation-interval"] = rotation_interval
         if rotation_event_in:
             data["rotation-event-in"] = rotation_event_in
@@ -684,10 +811,12 @@ class ThalesCDSPCSMClient:
         if rm_tags:
             data["rm-tag"] = rm_tags
         if delete_protection is not None:
-            data["delete_protection"] = delete_protection
+            # Convert boolean to string format expected by API
+            # True -> "1", False -> "0"
+            data["delete_protection"] = "1" if delete_protection else "0"
         if keep_prev_version is not None:
             data["keep-prev-version"] = str(keep_prev_version).lower()
         
         result = await self._make_request("gateway-update-item", data)
         logger.info(f"Item '{name}' updated successfully using gateway-update-item")
-        return result
+        return result 

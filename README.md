@@ -1,425 +1,414 @@
-# Thales CDSP CSM Akeyless Vault MCP Server
+# Thales CipherTrust Secrets Management MCP Server, powered by Akeyless
 
-**CSM = CipherTrust Secrets Management**
-
-A Model Context Protocol (MCP) server for managing secrets in Thales CDSP CSM (CipherTrust Secrets Management) Akeyless Vault. This server provides tools for creating, managing, and deleting static secrets, DFC keys, and other vault resources through the MCP protocol.
-
-## 📋 Table of Contents
-
-- [🎥 Demo](#-demo)
-- [🚀 Quick Start](#-quick-start)
-  - [Prerequisites](#prerequisites)
-  - [Installation](#installation)
-  - [Environment Variables](#environment-variables)
-  - [Running the Server](#running-the-server)
-- [🪟 Windows-Specific Instructions](#-windows-specific-instructions)
-  - [Prerequisites for Windows](#prerequisites-for-windows)
-  - [Windows Installation Steps](#windows-installation-steps)
-  - [Windows Virtual Environment Activation](#windows-virtual-environment-activation)
-  - [Running on Windows](#running-on-windows)
-  - [Windows Troubleshooting](#windows-troubleshooting)
-- [🛠️ Available Tools](#️-available-tools)
-  - [Secret Management](#secret-management)
-  - [Deletion Tools](#deletion-tools)
-- [📋 Secret Formats](#-secret-formats)
-  - [Text Format](#text-format)
-  - [JSON Format](#json-format)
-  - [Key-Value Format](#key-value-format)
-- [🔐 DFC Key Support](#-dfc-key-support)
-- [📚 Documentation](#-documentation)
-- [⚙️ MCP Configuration Files](#️-mcp-configuration-files)
-  - [Configuration Options](#configuration-options)
-  - [Usage Instructions](#usage-instructions)
-  - [Example Setup](#example-setup)
-- [🧪 Testing](#-testing)
-  - [Manual Testing](#manual-testing)
-  - [Automated Testing](#automated-testing)
-  - [Test Scenarios](#test-scenarios)
-- [🔧 Development](#-development)
-  - [Project Structure](#project-structure)
-  - [Key Features](#key-features)
-- [📄 License](#-license)
-- [🤝 Contributing](#-contributing)
-  - [Before Contributing](#before-contributing)
-  - [How to Contribute](#how-to-contribute)
-  - [Code Standards](#code-standards)
-  - [Questions or Issues](#questions-or-issues)
-
----
+A production-ready Model Context Protocol (MCP) server for enterprise secrets management in **Thales CipherTrust Secrets Management (CSM)**, powered by Akeyless Vault technology. This server delivers enterprise-grade secrets management through AI assistants and applications, with built-in security, compliance, and scalability features.
 
 ## 🎥 Demo
 
 📹 **[Watch the Demo Video - Coming Soon]()**
 
-See the Thales CSM Akeyless Vault MCP Server in action, demonstrating:
-- Deploying the MCP server and using with Cursor AI
-- Real-world usage examples (Example - Protect hard coded secrets in repositories/codebase)
-- Secret creation and management
-- DFC key operations  
+See the Thales CipherTrust Secrets Management MCP Server in action, demonstrating:
+- **Enterprise Deployment**: Seamless integration with CipherTrust Manager
+- **AI Assistant Integration**: Using with Claude Desktop, Cursor AI, and other MCP clients
+- **Real-World Scenarios**: Protecting hardcoded secrets in repositories and codebases
+- **Advanced Operations**: DFC key management, rotation, and certificate generation
+- **Security Features**: Delete protection, access control, and audit logging
 
-## 📚 Glossary
+## 🚀 Features
 
-- **CSM**: CipherTrust Secrets Management
-- **CDSP**: CipherTrust Data Security Platform
-- **DFC**: Distributed Fragments Key
-- **MCP**: Model Context Protocol
+### **Core Capabilities**
+- **Universal Secret Management**: Create, read, update, and delete static, dynamic, and rotated secrets
+- **DFC Key Management**: Manage Data Fragmentation Keys with comprehensive encryption options
+- **Smart Deletion**: Intelligent directory and bulk deletion with DFC key handling
+- **Auto-Format Detection**: Automatically detects and converts key-value format to JSON
 
-## 🚀 Quick Start
+### **Enterprise Security**
+- **Delete Protection**: Secure secrets with deletion protection and audit trails
+- **Access Control**: Role-based access management through CipherTrust Manager
+- **Compliance Ready**: Built for enterprise compliance requirements (SOC2, ISO27001, etc.)
+- **Audit Logging**: Comprehensive logging for security and compliance audits
 
-### Prerequisites
-- Python 3.8+
-- git
-- uv (if using uv pacakge manager)
-- An Akeyless connection created inside CipherTrust manager
-- Access Key ID and Access Key for Akeyless
+### **Infrastructure & Monitoring**
+- **Multiple Transport Modes**: Support for stdio and HTTP transports
+- **Health Monitoring**: Built-in health check endpoint for HTTP transport
+- **MCP Protocol Support**: Latest (2025-06-18) and backward compatible (2025-03-26) with FastMCP 2.10.5
+- **Scalable Architecture**: Designed for enterprise-scale deployments
 
-### Installation
+### **Integration & Automation**
+- **AI Assistant Ready**: Seamless integration with Claude, Cursor, and other MCP clients
+- **API-First Design**: RESTful endpoints for automation and CI/CD integration
+- **Multi-Platform Support**: Windows, Linux, and macOS compatibility
 
-#### Using uv (Recommended)
+## 🏗️ Architecture
+
+```
+src/
+├── core/           # Core client and configuration
+├── server/         # MCP server implementation
+├── tools/          # Tool implementations
+│   ├── secrets/    # Secret management tools
+│   ├── dfc_keys/   # DFC key management tools
+│   ├── auth/       # Authentication management
+│   ├── rotation/   # Secret rotation tools
+│   └── customer_fragments/  # Customer fragment management
+├── tests/          # Test suite and validation
+├── docs/           # Documentation and guides
+├── config/         # MCP configuration templates
+├── uv.lock         # UV dependency lock file (for reproducible builds)
+└── requirements.txt # Traditional pip requirements
+```
+
+## 📋 Prerequisites
+
+### **System Requirements**
+- **Python**: 3.8 or higher (3.9+ recommended for production)
+- **Memory**: Minimum 512MB RAM, 2GB+ recommended
+- **Storage**: 100MB+ available disk space
+- **Network**: Access to CipherTrust Manager instance
+
+### **Thales CipherTrust Access**
+- **CipherTrust Manager**: Active instance with CSM enabled
+- **API Access**: Valid Akeyless API credentials
+- **Permissions**: Appropriate access levels for secrets management
+- **Network**: Firewall access to CipherTrust Manager API endpoints
+
+### **Development Environment**
+- **Git**: For cloning and version control
+- **Package Manager**: 
+  - **uv** (recommended): Modern, fast Python package manager
+  - **pip**: Traditional Python package manager
+- **Virtual Environment**: Automatically managed by uv, or manual with pip
+
+## 🛠️ Installation
+
+### **Step 1: Clone the Repository**
 ```bash
-# Clone the repository
 git clone https://github.com/sanyambassi/thales-cdsp-csm-mcp-server
 cd thales-cdsp-csm-mcp-server
-
-# Install dependencies and create virtual environment
-uv sync
-
-# Set up environment variables
-cp env.example .env  # Linux/macOS
-# or
-copy env.example .env  # Windows
-# Edit .env with your Thales CSM credentials
 ```
 
-#### Using pip (Alternative)
+### **Step 2: Install Dependencies**
+
+#### **Option A: Using uv (Recommended for Development)**
 ```bash
-# Clone the repository
-git clone https://github.com/sanyambassi/thales-cdsp-csm-mcp-server
-cd thales-cdsp-csm-mcp-server
-
-# Create virtual environment
-python -m venv venv
-
-# Activate virtual environment
-
-# Linux/macOS:
-source venv/bin/activate
-
-# Windows (Command Prompt):
-venv\Scripts\activate.bat
-
-# Windows (PowerShell):
-venv\Scripts\Activate.ps1
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Set up environment variables
-cp env.example .env  # Linux/macOS
-# or
-copy env.example .env  # Windows
-# Edit .env with your Thales CSM credentials
-```
-
-### Environment Variables
-```bash
-AKEYLESS_API_URL=https://your-cm-hostname/akeyless-api/v2/
-AKEYLESS_ACCESS_ID=your_access_id
-AKEYLESS_ACCESS_KEY=your_access_key
-```
-
-### Running the Server
-
-The server supports two transport modes:
-
-#### stdio Transport (Default)
-```bash
-# Start MCP server with stdio transport
-python main.py --transport stdio
-
-# Or using uv
-uv run python main.py --transport stdio
-```
-
-**Use Case**: MCP client integration (Claude Desktop, Cursor, etc.)
-**Features**: Direct communication, no network exposure, automatic tool discovery
-
-#### HTTP Transport
-```bash
-# Start HTTP server for web/API access
-python main.py --transport streamable-http --host 0.0.0.0 --port 8000
-
-# Or using uv
-uv run python main.py --transport streamable-http --host 0.0.0.0 --port 8000
-```
-
-**Use Case**: Web applications, API testing, remote access
-**Features**: RESTful HTTP endpoints, network accessible, tool for testing
-
-#### Transport Options
-```bash
-# Custom host and port
-python main.py --transport streamable-http --host 127.0.0.1 --port 9000
-
-# Help
-python main.py --help
-```
-
-## 🪟 Windows-Specific Instructions
-
-### Prerequisites for Windows
-- **Python**: Download from [python.org](https://python.org) or use [Microsoft Store](https://apps.microsoft.com/detail/python-3-11/9NRWMJP3717K)
-- **Git**: Download from [git-scm.com](https://git-scm.com) or use [Git for Windows](https://gitforwindows.org/)
-- **PowerShell**: Use PowerShell 7+ for best experience (available via Microsoft Store)
-
-### Windows Installation Steps
-
-#### Using uv (Recommended for Windows)
-```powershell
-# Open PowerShell as Administrator (recommended)
-# Install uv if not already installed
-winget install --id=astral-sh.uv
-# or
+# Install uv if you don't have it
 pip install uv
 
-# Clone and setup
-git clone https://github.com/sanyambassi/thales-cdsp-csm-mcp-server
-cd thales-cdsp-csm-mcp-server
+# Create virtual environment and install dependencies
 uv sync
-copy env.example .env
-notepad .env  # Edit with your credentials
+
+# Activate the virtual environment
+# On Windows:
+.venv\Scripts\activate
+# On Linux/macOS:
+source .venv/bin/activate
 ```
 
-#### Using pip on Windows
-```cmd
-# Open Command Prompt or PowerShell
-git clone https://github.com/sanyambassi/thales-cdsp-csm-mcp-server
-cd thales-cdsp-csm-mcp-server
-
+#### **Option B: Using pip (Alternative)**
+```bash
 # Create virtual environment
-python -m venv venv
+python -m venv .venv
 
-# Activate (choose based on your shell)
-venv\Scripts\activate.bat     # Command Prompt
-# or
-venv\Scripts\Activate.ps1     # PowerShell
+# Activate virtual environment
+# On Windows:
+.venv\Scripts\activate
+# On Linux/macOS:
+source .venv/bin/activate
 
 # Install dependencies
 pip install -r requirements.txt
-
-# Setup environment
-copy env.example .env
-notepad .env  # Edit with your credentials
 ```
 
-### Windows Virtual Environment Activation
-- **Command Prompt**: `venv\Scripts\activate.bat`
-- **PowerShell**: `venv\Scripts\Activate.ps1`
-- **Git Bash**: `source venv/Scripts/activate`
-
-### Running on Windows
-```cmd
-# Command Prompt
-venv\Scripts\activate.bat
-python main.py --transport stdio
-
-# PowerShell
-venv\Scripts\Activate.ps1
-python main.py --transport stdio
-
-# With uv (no activation needed)
-uv run python main.py --transport stdio
-```
-
-### Windows Troubleshooting
-- **Path Issues**: Ensure Python and pip are in your system PATH
-- **Virtual Environment**: If activation fails, try running as Administrator
-- **Firewall**: Windows Defender may block HTTP transport mode - allow the application when prompted
-
-## 🛠️ Available Tools
-
-### Secret Management
-- **`create_static_secret`** - Create static secrets with format validation
-  - Supports text, JSON, and key-value formats
-  - Automatic path normalization and validation
-  - Tag-based organization and descriptions
-- **`create_dfc_key`** - Create Distributed Fragment Cryptography keys
-  - AES (128GCM, 256GCM, 128SIV, 256SIV, 128CBC, 256CBC)
-  - RSA (1024, 2048, 3072, 4096)
-  - Auto-rotation support for AES keys
-- **`get_secret`** - Retrieve secret values with path resolution
-- **`update_secret_value`** - Update existing secret values
-- **`update_item`** - Update item metadata and properties
-- **`list_items`** - List items with advanced filtering and pagination
-  - Path-based filtering and item type filtering
-  - Auto-pagination for large collections
-  - Minimal view options for performance
-- **`set_item_state`** - Enable/disable DFC Keys
-- **`update_rotation_settings`** - Configure automatic key rotation
-- **`security_guidelines`** - Security guidelines for different secret types and DFC protection
-
-### Deletion Tools
-- **`delete_item`** - Delete single items with DFC key handling
-- **`delete_items`** - Bulk delete with enhanced proactive strategy
-  - Automatic DFC key discovery and handling
-  - Recursive directory deletion
-  - Scheduled deletion for DFC Keys
-
-## 📋 Secret Formats
-
-### Text Format
-- Plain text secrets (default)
-- Supports multiline content, Unicode, special characters
-- Most flexible format
-
-### JSON Format
-- Valid JSON content
-- Supports nested structures, arrays, mixed types
-- Ideal for configuration data
-
-### Key-Value Format
-- Flat JSON objects with string values only
-- No nested structures or arrays
-- Perfect for simple key-value pairs
-
-## 🔐 DFC Key Support
-
-- **AES Keys**: AES128GCM, AES256GCM, AES128SIV, AES256SIV, AES128CBC, AES256CBC
-- **RSA Keys**: RSA1024, RSA2048, RSA3072, RSA4096
-- **Auto-rotation**: Supported for AES keys (7-365 day intervals)
-- **Security**: Delete protection, immediate deletion and scheduled deletion
-
-## 📚 Documentation
-
-- **`docs/README.md`** - Documentation overview and navigation
-- **`docs/TRANSPORT_MODES.md`** - Transport mode configuration
-- **`docs/TESTING.md`** - Manual and automated testing guide
-
-## ⚙️ MCP Configuration Files
-
-The repository includes multiple MCP configuration files in the `config/` directory for different environments:
-
-### **Configuration Options:**
-
-- **`config/mcp-config.json`** - Cross-platform standard Python (recommended for most users)
-- **`config/mcp-config-uv.json`** - UV environment with `uv run python`
-- **`config/mcp-config-venv.json`** - Windows virtual environment with explicit paths
-- **`config/mcp-config-venv-unix.json`** - Unix/Linux virtual environment with explicit paths
-
-### **Usage Instructions:**
-
-1. **Choose the appropriate config file** based on your environment
-2. **Copy the config file** to your MCP client's configuration directory
-3. **Update the environment variables** with your actual Akeyless credentials
-4. **Ensure you're in the repository directory** when running the server (paths are relative)
-
-### **Example Setup:**
+### **Step 3: Configure Environment**
 ```bash
-# Clone and navigate to repository
+# Copy environment template
+cp env.example .env
+
+# Edit .env with your CipherTrust Manager credentials
+# Required: AKEYLESS_ACCESS_ID, AKEYLESS_ACCESS_KEY, AKEYLESS_API_URL
+# Optional: LOG_LEVEL, AKEYLESS_VERIFY_SSL
+```
+
+### **Step 4: Verify Installation**
+```bash
+# Test the server startup
+python main.py --help
+
+# Should display available transport options and help information
+```
+
+## 🚀 **UV Package Manager (Recommended)**
+
+### **Quick Start with UV**
+```bash
+# 1. Install uv
+# On Windows (recommended):
+winget install --id=astral-sh.uv
+# Or using pip:
+pip install uv
+
+# 2. Clone and setup
 git clone https://github.com/sanyambassi/thales-cdsp-csm-mcp-server
 cd thales-cdsp-csm-mcp-server
 
-# Copy your chosen config file to MCP client config directory
-# (location varies by MCP client - check your client's documentation)
+# 3. Install dependencies (creates .venv automatically)
+uv sync
 
-# Update credentials in the config file or use .env file
-cp env.example .env
-# Edit .env with your actual credentials
+# 4. Run the server
+uv run python main.py
 ```
 
-## 🧪 Testing
+### **Why Use UV?**
+- **Faster Installation**: 10-100x faster than pip
+- **Dependency Resolution**: Intelligent conflict resolution
+- **Lock File**: Reproducible builds with `uv.lock`
+- **Modern Tooling**: Built-in virtual environment management
 
-### Manual Testing
-- **stdio Transport**: Test with MCP clients (Claude Desktop, Cursor)
-- **HTTP Transport**: Test with HTTP requests (curl, Postman)
-- **Tool Validation**: Test all available tools and error conditions
-- **Path Resolution**: Verify path normalization and resolution
-
-### Automated Testing
+### **UV Commands Reference**
 ```bash
-# Run test suite
-uv run python -m pytest tests/
+# Install uv
+pip install uv
 
-# Run with coverage
-uv run python -m pytest tests/ --cov=src/ --cov-report=html
+# Create project and install dependencies
+uv sync
+
+# Add new dependency
+uv add package-name
+
+# Add development dependency
+uv add --dev package-name
+
+# Update dependencies
+uv sync --upgrade
+
+# Run commands in virtual environment
+uv run python main.py
+
+# Activate virtual environment manually
+source .venv/bin/activate  # Linux/macOS
+.venv\Scripts\activate     # Windows
 ```
 
-#### Windows Testing Commands
-```cmd
-# Command Prompt
-venv\Scripts\activate.bat
-python -m pytest tests/
+### **UV vs Traditional pip**
+| Feature | UV | pip + venv |
+|---------|----|------------|
+| **Speed** | ⚡ 10-100x faster | 🐌 Standard speed |
+| **Lock File** | ✅ `uv.lock` | ❌ No lock file |
+| **Virtual Env** | ✅ Auto-created | ⚠️ Manual creation |
+| **Dependency Resolution** | ✅ Smart | ⚠️ Basic |
+| **Cross-Platform** | ✅ Yes | ✅ Yes |
 
-# PowerShell
-venv\Scripts\Activate.ps1
-python -m pytest tests/
+### **UV Troubleshooting**
+```bash
+# If uv sync fails, try:
+uv sync --reinstall
 
-# With uv (no activation needed)
-uv run python -m pytest tests/
+# Clear uv cache if needed:
+uv cache clean
+
+# Check uv version:
+uv --version
+
+# Force recreate virtual environment:
+rm -rf .venv
+uv sync
 ```
 
-### Test Scenarios
-- Basic functionality and tool registration
-- Secret creation, retrieval, and deletion
-- Error handling and validation
-- Performance and pagination
-- Transport mode compatibility
+## ⚙️ Configuration
 
-**📖 See [docs/TESTING.md](docs/TESTING.md) for complete testing guide**
+### **Environment Variables**
+
+Create a `.env` file with your CipherTrust Manager configuration:
+
+```env
+# Required: CipherTrust Manager API credentials
+AKEYLESS_ACCESS_ID=your_access_id
+AKEYLESS_ACCESS_KEY=your_access_key
+AKEYLESS_API_URL=https://your-ciphertrust-manager/akeyless-api/v2/
+
+# Optional: Logging and security settings
+LOG_LEVEL=INFO                    # DEBUG, INFO, NOTICE, WARNING, ERROR, CRITICAL, ALERT, EMERGENCY
+AKEYLESS_VERIFY_SSL=true          # SSL certificate verification (true/false)
+```
+
+### **Configuration Notes**
+
+- **API URL Format**: Must end with `/akeyless-api/v2/`
+- **SSL Verification**: Set to `false` only for self-signed certificates in development
+- **Log Levels**: Use `DEBUG` for troubleshooting, `INFO` for production, `WARNING`/`ERROR` for critical operations
+- **Access Credentials**: Store securely, never commit to version control
+
+### **Security Best Practices**
+
+- Use environment-specific credentials for different deployments
+- Rotate access keys regularly
+- Monitor API access logs for suspicious activity
+- Use network segmentation to limit API access
+
+## 🚀 Usage
+
+### **Quick Start Example**
+
+```bash
+# 1. Start the server in stdio mode (for AI assistants)
+python main.py
+
+# 2. Or start in HTTP mode for API access
+python main.py --transport streamable-http --port 8000
+
+# 3. Test the health endpoint (HTTP mode only)
+curl http://localhost:8000/health
+```
+
+### **Transport Modes**
+
+- **stdio (default)**: Direct integration with MCP clients like Claude Desktop and Cursor
+- **HTTP**: RESTful API access for automation, monitoring, and integration
+
+### Health Monitoring
+
+When running in HTTP mode, the server provides a health check endpoint:
+
+```bash
+# Check server health
+curl http://localhost:8000/health
+
+# Response includes:
+# - Server status and version
+# - MCP protocol versions
+# - Available tools count
+# - Configuration status
+# - Connectivity information
+
+# Test with curl
+curl http://localhost:8000/health
+```
+
+### **Available Tools**
+
+#### **Secrets Management** (`manage_secrets`)
+- **Create secrets**: Static, dynamic, and rotated secrets with format validation
+- **Update secrets**: Modify values and properties including delete protection
+- **Delete secrets**: Smart deletion with directory support and DFC key handling
+- **List secrets**: Browse and search secret collections with pagination
+
+#### **DFC Key Management** (`manage_dfc_keys`)
+- **Create DFC keys**: AES and RSA encryption keys with comprehensive options
+- **Auto-rotation**: Automatic key rotation for AES keys (7-365 day intervals)
+- **Certificate generation**: Self-signed X.509 certificates with configurable parameters
+- **Key state management**: Enable/disable keys and manage lifecycle
+
+#### **Authentication & Access** (`manage_auth`)
+- **API key management**: Create and manage API keys for automation
+- **Customer fragments**: Manage customer fragment access and permissions
+- **Role-based access**: Integrate with CipherTrust Manager access controls
+
+#### **Additional Tools**
+- **Rotation Management**: Configure and monitor secret rotation schedules
+- **Security Guidelines**: Access security best practices and compliance information
 
 ## 🔧 Development
 
-### Project Structure
+### **Project Structure**
 ```
-src/thales_cdsp_csm_mcp_server/
-├── client.py          # Thales API client
-├── server.py          # MCP server implementation
-└── tools/
-    ├── base_tools.py  # Base tool classes
-    └── secret_tools.py # Secret management tools
-
-config/                 # MCP configuration files
-├── mcp-config.json    # Standard Python (cross-platform)
-├── mcp-config-uv.json # UV environment
-├── mcp-config-venv.json # Windows virtual environment
-└── mcp-config-venv-unix.json # Unix/Linux virtual environment
+src/
+├── core/           # Core client and configuration management
+├── server/         # MCP server implementation and transport layers
+├── tools/          # Tool implementations and business logic
+│   ├── secrets/    # Secret management tools and validation
+│   ├── dfc_keys/   # DFC key management and encryption
+│   ├── auth/       # Authentication and access management
+│   ├── rotation/   # Secret rotation and lifecycle
+│   └── customer_fragments/  # Customer fragment management
+└── tests/          # Test suite and validation
 ```
 
-### Key Features
-- **FastMCP Integration**: Built-in type coercion and validation
-- **Comprehensive Validation**: Format-specific validation for all secret types
-- **Error Handling**: Robust error handling with user-friendly messages
-- **Logging**: Detailed logging for debugging and monitoring
+### **Technology Stack**
+- **FastMCP**: Modern, production-ready MCP server framework
+- **Async/await**: Full asynchronous support for high-performance operations
+- **Type hints**: Comprehensive type annotations for maintainability
+- **Error handling**: User-friendly error messages with actionable guidance
+- **Configuration**: Pydantic-based config management with environment variable support
+- **Logging**: Structured logging with rotation and multiple output formats
+
+### Logging
+The server provides comprehensive logging with both console and file output:
+- **Log Levels**: DEBUG, INFO, NOTICE, WARNING, ERROR, CRITICAL, ALERT, EMERGENCY (configurable via `LOG_LEVEL` env var)
+- **Log Files**: Stored in `logs/thales-csm-mcp.log` with automatic rotation
+- **Rotation**: 10MB max per file, keeping 5 backup files
+- **Format**: Timestamp, logger name, level, and message
+- **MCP Compliance**: Full MCP protocol logging with level filtering and notifications
+
+### Adding New Tools
+1. Create tool class in `src/tools/`
+2. Implement required methods
+3. Register with MCP server
+4. Add to documentation
+
+## 🏢 Enterprise Features
+
+### **Security & Compliance**
+- **SOC2 Type II Ready**: Built with enterprise security standards
+- **ISO27001 Compatible**: Follows information security best practices
+- **Audit Trail**: Comprehensive logging for compliance and forensics
+- **Access Control**: Role-based permissions through CipherTrust Manager
+
+### **Scalability & Performance**
+- **High Availability**: Designed for enterprise-scale deployments
+- **Load Balancing**: HTTP transport supports multiple instances
+- **Performance Monitoring**: Built-in health checks and metrics
+- **Resource Optimization**: Efficient memory and CPU usage
+
+### **Integration & Automation**
+- **CI/CD Ready**: API endpoints for automation workflows
+- **Monitoring Integration**: Health endpoints for monitoring systems
+- **Multi-Environment**: Support for dev, staging, and production
+- **Backup & Recovery**: Integrates with enterprise backup solutions
+
+## 📚 Documentation
+
+- [Tools Reference](docs/TOOLS.md) - Comprehensive tool documentation and examples
+- [Transport Modes](docs/TRANSPORT_MODES.md) - Available transport configurations
+- [Documentation Directory](docs/README.md) - Overview of all documentation files
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
 
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🤝 Contributing
+## 🆘 Support
 
-We welcome contributions! Here's how to get started:
+### **Getting Help**
 
-### **Before Contributing**
-- Check existing issues and pull requests
-- Ensure your changes align with the project's scope
-- Test your changes thoroughly
+- **Documentation**: Start with the [Tools Reference](docs/TOOLS.md) and [Transport Modes](docs/TRANSPORT_MODES.md)
+- **Issues**: Check existing [GitHub Issues](https://github.com/sanyambassi/thales-cdsp-csm-mcp-server/issues)
+- **Discussions**: Use [GitHub Discussions](https://github.com/sanyambassi/thales-cdsp-csm-mcp-server/discussions) for questions
 
-### **How to Contribute**
-1. **Fork** the repository
-2. **Create** a feature branch (`git checkout -b feature/amazing-feature`)
-3. **Make** your changes
-4. **Test** your changes (`uv run python -m pytest tests/`)
-5. **Commit** with clear messages (`git commit -m 'Add amazing feature'`)
-6. **Push** to your branch (`git push origin feature/amazing-feature`)
-7. **Open** a Pull Request
+### **Reporting Issues**
 
-### **Code Standards**
-- Follow existing code style and patterns
-- Add tests for new functionality
-- Update documentation as needed
-- Ensure all tests pass before submitting
+When creating an issue, please include:
+- **Environment**: OS, Python version, CipherTrust Manager version
+- **Configuration**: Relevant environment variables (masked)
+- **Error Details**: Full error messages and stack traces
+- **Steps to Reproduce**: Clear sequence of actions
+- **Expected vs Actual**: What you expected vs what happened
 
-### **Questions or Issues?**
-- Open an issue for bugs or feature requests
-- Provide clear reproduction steps for bugs
-- Include relevant system information 
+### **Enterprise Support**
+
+For enterprise customers:
+- **Thales Support**: Contact your Thales representative
+- **Professional Services**: Available through Thales consulting
+- **Training**: Custom training and implementation support
+
+## 🔗 Links
+
+- [Model Context Protocol](https://modelcontextprotocol.io/)
+- [Thales CipherTrust](https://ciphertrust.com/)
+- [Akeyless Vault](https://www.akeyless.io/)
+- [FastMCP](https://github.com/jlowin/fastmcp) 

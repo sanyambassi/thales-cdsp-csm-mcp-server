@@ -5,8 +5,11 @@ A Model Context Protocol (MCP) server for managing secrets in Thales CSM (Cipher
 """
 
 from .server import ThalesCDSPCSMMCPServer
-from .client import ThalesCDSPCSMConfig, ThalesCDSPCSMClient
+from .core import ThalesCDSPCSMConfig, ThalesCDSPCSMClient
 
-__version__ = "0.1.0"
+__version__ = "1.0.0"
 __author__ = "Thales CDSP Team"
+__mcp_protocol_version_latest__ = "2025-06-18"
+__mcp_protocol_version_backward__ = "2025-03-26"
+__mcp_protocol_version__ = __mcp_protocol_version_latest__  # Default to latest
 __all__ = ["ThalesCDSPCSMMCPServer", "ThalesCDSPCSMConfig", "ThalesCDSPCSMClient"] 
