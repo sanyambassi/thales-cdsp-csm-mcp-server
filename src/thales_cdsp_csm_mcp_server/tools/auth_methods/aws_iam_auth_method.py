@@ -18,7 +18,7 @@ class AwsIamAuthMethod(BaseAuthMethod):
     
     async def create(self, name: str, **kwargs) -> Dict[str, Any]:
         """Create a new AWS IAM authentication method."""
-        # TODO: Implement when AWS IAM auth method endpoints are available
+        # TODO: Will be available in a future version
         return {
             "success": False,
             "error": "AWS IAM authentication method creation not yet implemented",
@@ -27,7 +27,7 @@ class AwsIamAuthMethod(BaseAuthMethod):
     
     async def update(self, name: str, **kwargs) -> Dict[str, Any]:
         """Update an existing AWS IAM authentication method."""
-        # TODO: Implement when AWS IAM auth method endpoints are available
+        # TODO: Will be available in a future version
         return {
             "success": False,
             "error": "AWS IAM authentication method update not yet implemented",
