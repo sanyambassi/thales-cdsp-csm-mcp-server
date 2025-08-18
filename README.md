@@ -4,6 +4,59 @@
 
 Simple MCP server for Thales CipherTrust Secrets Management, powered by Akeyless.
 
+## 📋 **Prerequisites**
+
+Before you begin, ensure you have the following installed on your system:
+
+- **Python 3.8+**: Required for running the MCP server
+- **uv**: Modern Python package manager (recommended) or pip
+- **git**: For cloning the repository
+- **Thales CipherTrust Manager access**
+- **Valid Akeyless credentials**
+
+### **Installing Prerequisites**
+
+#### **Python**
+```bash
+# Check if Python is installed
+python --version
+# or
+python3 --version
+
+# Install Python (Ubuntu/Debian)
+sudo apt update && sudo apt install python3 python3-pip
+
+# Install Python (macOS)
+brew install python
+
+# Install Python (Windows)
+# Download from https://python.org
+```
+
+#### **uv (Recommended)**
+```bash
+# Install uv
+pip install uv
+
+# Verify installation
+uv --version
+```
+
+#### **git**
+```bash
+# Check if git is installed
+git --version
+
+# Install git (Ubuntu/Debian)
+sudo apt update && sudo apt install git
+
+# Install git (macOS)
+brew install git
+
+# Install git (Windows)
+# Download from https://git-scm.com
+```
+
 ## 🚀 **What It Does**
 
 - **Secrets Management**: Create, read, update, delete secrets
@@ -98,7 +151,6 @@ curl http://localhost:8000/health
 
 ## 📚 **Documentation**
 
-- **[TESTING.md](docs/TESTING.md)** - How to test
 - **[TRANSPORT_MODES.md](docs/TRANSPORT_MODES.md)** - How to run
 - **[TOOLS.md](docs/TOOLS.md)** - What tools do
 - **[TESTING.md](docs/TESTING.md)** - Complete testing guide
@@ -161,12 +213,6 @@ curl http://localhost:8000/health
 ### **Configuration Templates**
 - **[config/mcp-config-uv.json](config/mcp-config-uv.json)** - UV package manager setup
 - **[config/mcp-config.json](config/mcp-config.json)** - Basic configuration template
-
-## ⚙️ **Requirements**
-
-- Python 3.10+
-- Thales CipherTrust Manager access
-- Valid Akeyless credentials
 
 ## 🤝 **Support**
 
