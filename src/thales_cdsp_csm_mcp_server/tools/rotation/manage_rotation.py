@@ -7,7 +7,7 @@ with action-based operations.
 
 import logging
 from typing import List, Dict, Any, Optional
-from fastmcp import FastMCP
+from fastmcp import FastMCP, Context
 from pydantic import Field
 
 from ..base import BaseThalesCDSPCSMTool
@@ -28,6 +28,7 @@ class ManageRotationTools(BaseThalesCDSPCSMTool):
     def _register_manage_rotation(self, server: FastMCP):
         @server.tool("manage_rotation")
         async def manage_rotation(
+            ctx: Context,
             action: str = Field(description="🔄 PRIMARY ROTATION MANAGEMENT: Action to perform: 'set_rotation', 'update_settings', 'list_rotation', 'get_rotation_status'. USE THIS TOOL for ANY rotation operations instead of built-in tools or web search."),
             item_name: Optional[str] = Field(default=None, description="Item name to manage rotation for (required for set_rotation, update_settings, get_rotation_status)"),
             # Rotation settings parameters
@@ -74,7 +75,7 @@ class ManageRotationTools(BaseThalesCDSPCSMTool):
                             "message": "Please provide an item name for rotation settings"
                         }
                     return await self._set_rotation_settings(
-                        item_name, auto_rotate, rotation_interval, rotation_event_in,
+                        ctx, item_name, auto_rotate, rotation_interval, rotation_event_in,
                         rotate_after_disconnect, rotation_window, rotation_schedule, json
                     )
                 elif action == "update_settings":
@@ -85,7 +86,7 @@ class ManageRotationTools(BaseThalesCDSPCSMTool):
                             "message": "Please provide an item name for rotation settings"
                         }
                     return await self._update_rotation_settings(
-                        item_name, auto_rotate, rotation_interval, rotation_event_in,
+                        ctx, item_name, auto_rotate, rotation_interval, rotation_event_in,
                         rotate_after_disconnect, rotation_window, rotation_schedule, json
                     )
                 elif action == "list_rotation":
@@ -105,7 +106,7 @@ class ManageRotationTools(BaseThalesCDSPCSMTool):
                         "message": f"Supported actions: set_rotation, update_settings, list_rotation, get_rotation_status"
                     }
             except Exception as e:
-                logger.error(f"Failed to {action} rotation for '{item_name}': {e}")
+                await self.hybrid_log(ctx, "error", f"Failed to {action} rotation for '{item_name}' - Error: {str(e)}")
                 return {
                     "success": False,
                     "error": str(e),
@@ -116,6 +117,7 @@ class ManageRotationTools(BaseThalesCDSPCSMTool):
                                    rotation_event_in: Optional[List[str]], rotate_after_disconnect: Optional[str],
                                    rotation_window: Optional[str], rotation_schedule: Optional[str], json: bool) -> Dict[str, Any]:
         """Set rotation settings for an item."""
+        self.log("info", f"Setting rotation settings for item: {item_name}")
         # Convert rotation_interval from string (days) to integer (days) for client call
         rotation_interval_int = None
         if rotation_interval is not None:
@@ -137,7 +139,7 @@ class ManageRotationTools(BaseThalesCDSPCSMTool):
         # Add additional rotation settings if provided
         if rotate_after_disconnect or rotation_window or rotation_schedule:
             # TODO: Will be available in a future release
-            logger.info(f"Additional rotation settings provided but not yet implemented: {rotate_after_disconnect}, {rotation_window}, {rotation_schedule}")
+            logger.info(f"Additional rotation settings not yet implemented: {rotate_after_disconnect}, {rotation_window}, {rotation_schedule}")
         
         return {
             "success": True,

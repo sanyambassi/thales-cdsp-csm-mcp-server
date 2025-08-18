@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
 """
-Thales CipherTrust Secrets Management MCP Server
-Powered by Akeyless Vault Technology
+Thales CSM MCP Server
 
-A Model Context Protocol (MCP) server for managing secrets in Thales CipherTrust 
-Secrets Management (CSM) through AI assistants and applications.
+Simple MCP server for Thales CipherTrust Secrets Management.
 """
 
 import asyncio
@@ -13,7 +11,7 @@ from src.thales_cdsp_csm_mcp_server.server.mcp_server import ThalesCDSPCSMMCPSer
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Thales CipherTrust Secrets Management MCP Server - Powered by Akeyless",
+        description="Thales CSM MCP Server - Simple secrets management",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:

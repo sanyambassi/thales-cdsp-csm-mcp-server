@@ -9,7 +9,7 @@ from .base import ThalesCDSPCSMTools, BaseThalesCDSPCSMTool
 # Consolidated tools from their new domain-specific directories
 from .secrets.manage_secrets import ManageSecretsTools
 from .dfc_keys.manage_dfc_keys import ManageDFCKeysTools
-from .auth.manage_auth import ManageAuthTools
+from .auth_methods.auth_methods_manager import AuthMethodsManager
 from .customer_fragments.manage_customer_fragments import ManageCustomerFragmentsTools
 from .guidelines.security_guidelines import SecurityGuidelinesTools
 from .rotation.manage_rotation import ManageRotationTools
@@ -23,7 +23,7 @@ __all__ = [
     # Consolidated tools
     "ManageSecretsTools",
     "ManageDFCKeysTools",
-    "ManageAuthTools",
+    "AuthMethodsManager",
     "ManageCustomerFragmentsTools",
     "SecurityGuidelinesTools",
     "ManageRotationTools",

@@ -7,8 +7,8 @@ Simple MCP server for Thales CipherTrust Secrets Management, powered by Akeyless
 ## 🚀 **What It Does**
 
 - **Secrets Management**: Create, read, update, delete secrets
-- **Key Management**: DFC encryption keys (AES, RSA)
-- **Authentication**: Access control and policies
+- **DFC Key Management**: DFC encryption keys (AES, RSA)
+- **Authentication Methods**: Manage Authentication Methods
 - **Security**: Guidelines and best practices
 - **MCP Protocol**: Model Context Protocol compliance
 

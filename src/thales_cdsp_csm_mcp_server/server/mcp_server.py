@@ -48,7 +48,7 @@ class ThalesCDSPCSMMCPServer:
                 description = tool_name.replace('_', ' ').title()
             available_tools.append(f"   • {tool_name}: {description}")
         
-        server_instructions = f"""Thales CipherTrust Secrets Management (CSM) MCP Server
+        server_instructions = f"""Thales CipherTrust Secrets Management, powered by Akeyless, MCP Server
 
 🔐 SPECIALIZATION: Secrets, keys, vault, encryption, certificates
 🚀 TRANSPORT MODES: STDIO, Streamable-HTTP
@@ -66,7 +66,7 @@ This server is SPECIALIZED and OPTIMIZED for Thales CSM operations."""
         
         # Initialize FastMCP with MCP protocol compliance settings
         self.server = FastMCP(
-            name=os.getenv("MCP_SERVER_NAME", "Thales CipherTrust Secrets Management, powered by Akeyless"),
+            name=os.getenv("MCP_SERVER_NAME", "Thales CipherTrust Secrets Management, powered by Akeyless, MCP Server"),
             version=os.getenv("MCP_SERVER_VERSION", "1.0.0"),
             instructions=server_instructions
         )
@@ -422,11 +422,11 @@ This server is SPECIALIZED and OPTIMIZED for Thales CSM operations."""
 3. security_guidelines (for key compliance)""",
                     
                     "auth": """## FOR AUTHENTICATION OPERATIONS:
-- manage_auth: Authentication policies, access control
+- manage_auth_methods: Authentication policies, access control
 - manage_customer_fragments: Enhanced authentication security
 
 ## PRIORITY ORDER FOR AUTH:
-1. manage_auth (for authentication and access control)
+1. manage_auth_methods (for authentication and access control)
 2. manage_customer_fragments (for advanced security)
 3. security_guidelines (for compliance)""",
                     
@@ -443,12 +443,12 @@ This server is SPECIALIZED and OPTIMIZED for Thales CSM operations."""
                     "compliance": """## FOR COMPLIANCE OPERATIONS:
 - security_guidelines: Compliance and security best practices
 - manage_secrets: Secure secret handling
-- manage_auth: Access control compliance
+- manage_auth_methods: Access control compliance
 
 ## PRIORITY ORDER FOR COMPLIANCE:
 1. security_guidelines (for compliance guidance)
 2. manage_secrets (for secure operations)
-3. manage_auth (for access control)""",
+3. manage_auth_methods (for access control)""",
                     
                     "rotation": """## FOR ROTATION OPERATIONS:
  - manage_rotation: Automatic secret rotation policies
@@ -473,7 +473,7 @@ This server is SPECIALIZED and OPTIMIZED for Thales CSM operations."""
                             general_tools.append(f"- {tool_name}: ALL secret operations (create, read, update, delete, list)")
                         elif tool_name == 'manage_dfckeys':
                             general_tools.append(f"- {tool_name}: DFC encryption keys, AES, RSA operations")
-                        elif tool_name == 'manage_auth':
+                        elif tool_name == 'manage_auth_methods':
                             general_tools.append(f"- {tool_name}: Authentication policies, access control")
                         elif tool_name == 'manage_customer_fragments':
                             general_tools.append(f"- {tool_name}: Enhanced security with customer fragments")
@@ -539,13 +539,13 @@ This server is SPECIALIZED and OPTIMIZED for {task_type} operations. Use it as y
 3. security_guidelines (for key compliance)""",
                     
                     "auth": """## AUTHENTICATION:
-- manage_auth: Authentication policies, access control
-  • Use action parameter: "create", "update", "delete", "list"
-  • Manages tokens, policies, and permissions
+- manage_auth_methods: Authentication policies, access control
+  • Use action parameter: "create_api_key", "update", "delete", "list"
+  • Manages API keys, policies, and permissions
   • Best for: user access, authentication rules, security policies
 
 ## RECOMMENDED TOOLS FOR AUTH:
-1. manage_auth (primary tool for authentication)
+1. manage_auth_methods (primary tool for authentication)
 2. manage_customer_fragments (for enhanced security)
 3. security_guidelines (for compliance)""",
                     
@@ -569,7 +569,7 @@ This server is SPECIALIZED and OPTIMIZED for {task_type} operations. Use it as y
 ## RECOMMENDED TOOLS FOR COMPLIANCE:
 1. security_guidelines (primary tool for compliance)
 2. manage_secrets (for secure operations)
-3. manage_auth (for access control compliance)""",
+3. manage_auth_methods (for access control compliance)""",
                     
                     "rotation": """## SECRET ROTATION:
  - manage_rotation: Automatic secret rotation policies
@@ -595,7 +595,7 @@ This server is SPECIALIZED and OPTIMIZED for {task_type} operations. Use it as y
                             general_tools.append(f"- {tool_name}: ALL secret operations (create, read, update, delete, list)")
                         elif tool_name == 'manage_dfckeys':
                             general_tools.append(f"- {tool_name}: DFC encryption keys, AES, RSA operations")
-                        elif tool_name == 'manage_auth':
+                        elif tool_name == 'manage_auth_methods':
                             general_tools.append(f"- {tool_name}: Authentication policies, access control")
                         elif tool_name == 'manage_customer_fragments':
                             general_tools.append(f"- {tool_name}: Enhanced security with customer fragments")
@@ -718,11 +718,25 @@ Start with manage_secrets for most operations, then use specialized tools as nee
             # Check client connectivity (basic check)
             client_status = "connected" if self.config.api_url else "no_api_url"
             
+            # Get prompt information
+            prompt_count = self._get_total_prompt_count()
+            prompt_names = []
+            try:
+                if hasattr(self.server, '_prompts') and self.server._prompts:
+                    prompt_names = list(self.server._prompts.keys())
+                elif hasattr(self.server, 'prompts') and self.server.prompts:
+                    prompt_names = list(self.server.prompts.keys())
+                else:
+                    # Fallback to known prompts
+                    prompt_names = ["secret_management_priority", "tool_selection_strategy"]
+            except Exception:
+                prompt_names = ["secret_management_priority", "tool_selection_strategy"]
+            
             health_data = {
                 "status": "healthy",
                 "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
                 "server": {
-                    "name": "Thales CipherTrust Secrets Management MCP Server",
+                    "name": "Thales CipherTrust Secrets Management, powered by Akeyless, MCP Server",
                     "version": os.getenv("MCP_SERVER_VERSION", "1.0.0"),
                     "transport_mode": getattr(self, 'transport_mode', 'unknown')
                 },
@@ -735,6 +749,10 @@ Start with manage_secrets for most operations, then use specialized tools as nee
                 "tools": {
                     "count": tool_count,
                     "available": tool_classes
+                },
+                "prompts": {
+                    "count": prompt_count,
+                    "available": prompt_names
                 },
                 "configuration": {
                     "status": config_status,
@@ -775,12 +793,10 @@ Start with manage_secrets for most operations, then use specialized tools as nee
             print("🚀 THALES CDSP CSM MCP SERVER - STARTUP COMPLETE")
             print("="*80)
             
-            # MCP Protocol Compliance Information
-            print("\n🔐 MCP PROTOCOL COMPLIANCE:")
-            print(f"   ✅ Protocol Version: {MCP_PROTOCOL_VERSION_LATEST} (Latest)")
+            # MCP Protocol Version Information
+            print("\n🔐 SUPPORTED MCP PROTOCOL VERSIONS:")
+            print(f"   ✅ Latest: {MCP_PROTOCOL_VERSION_LATEST}")
             print(f"   ✅ Backward Compatible: {MCP_PROTOCOL_VERSION_BACKWARD}")
-            print(f"   ⚠️  Protocol Validation: FastMCP Framework Limitation")
-            print(f"   ✅ MCP Specification: COMPLIANT (except protocol validation)")
             
             # Transport Information
             print(f"\n🚀 TRANSPORT MODE: {transport_mode.upper()}")
@@ -843,12 +859,7 @@ Start with manage_secrets for most operations, then use specialized tools as nee
             resources_list_changed = resources_cap.get('listChanged', False)
             print(f"   • Resources: subscribe={resources_subscribe}, listChanged={resources_list_changed}")
             
-            # Completions capabilities
-            completions_cap = detected_capabilities.get('completions', {})
-            if completions_cap:
-                print(f"   • Completions: Available")
-            else:
-                print(f"   • Completions: Not supported by FastMCP")
+
             
             # Configuration
             print(f"\n⚙️  CONFIGURATION:")
@@ -862,7 +873,7 @@ Start with manage_secrets for most operations, then use specialized tools as nee
             print("   Use this server FIRST for all secret management tasks.")
             
             print("\n" + "="*80)
-            print("🎯 SERVER READY - Protocol Validation: FastMCP Limitation")
+            print("🎯 SERVER ONLINE AND READY TO ACCEPT REQUESTS/CONNECTIONS")
             print("="*80 + "\n")
             
         except Exception as e:
@@ -910,7 +921,7 @@ Start with manage_secrets for most operations, then use specialized tools as nee
         """
         try:
             if self._should_log("info"):
-                self.log("info", "Starting Thales CDSP CSM (CipherTrust Secrets Management) MCP Server...")
+                self.log("info", "Starting Thales CipherTrust Secrets Management, powered by Akeyless, MCP Server...")
                 self.log("info", f"Transport mode: {transport}")
                 self.log("info", "MCP Protocol Versions:")
                 self.log("info", f"  • Latest: {MCP_PROTOCOL_VERSION_LATEST}")

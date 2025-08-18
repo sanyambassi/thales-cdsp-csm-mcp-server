@@ -5,6 +5,8 @@ This module provides the base classes and tool registry for all MCP tools.
 """
 
 import logging
+import logging.handlers
+from pathlib import Path
 from typing import Dict, List, Type
 
 from ..core.client import ThalesCDSPCSMClient
@@ -17,7 +19,111 @@ class BaseThalesCDSPCSMTool:
     
     def __init__(self, client: ThalesCDSPCSMClient):
         self.client = client
-        self.logger = logging.getLogger(self.__class__.__name__)
+        self._setup_tool_logging()
+    
+    def _setup_tool_logging(self):
+        """Setup tool-specific logging with both Python logging and MCP protocol support."""
+        # Create tool-specific logger
+        tool_name = self.__class__.__name__.lower()
+        self.logger = logging.getLogger(f"thales_csm_mcp.tools.{tool_name}")
+        
+        # Setup tool-specific file logging
+        self._setup_tool_file_logging(tool_name)
+    
+    def _setup_tool_file_logging(self, tool_name: str):
+        """Setup tool-specific file logging."""
+        try:
+            # Create tools log directory
+            tools_log_dir = Path("logs/tools")
+            tools_log_dir.mkdir(parents=True, exist_ok=True)
+            
+            # Create tool-specific log file
+            log_file = tools_log_dir / f"{tool_name}.log"
+            
+            # Create file handler with rotation
+            file_handler = logging.handlers.RotatingFileHandler(
+                log_file,
+                maxBytes=5*1024*1024,  # 5MB
+                backupCount=3,
+                encoding='utf-8'
+            )
+            file_handler.setLevel(logging.DEBUG)
+            
+            # Create formatter
+            formatter = logging.Formatter(
+                '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+            )
+            file_handler.setFormatter(formatter)
+            
+            # Add handler to tool logger
+            self.logger.addHandler(file_handler)
+            
+            # Prevent propagation to avoid duplicate logs
+            self.logger.propagate = False
+            
+        except Exception as e:
+            # Fallback to standard logging if file setup fails
+            self.logger = logging.getLogger(self.__class__.__name__)
+            self.logger.warning(f"Could not setup tool-specific file logging: {e}")
+    
+    def log(self, level: str, message: str, data: dict = None):
+        """Log message with both tool-specific file logging and MCP protocol support."""
+        # Convert MCP level to Python logging level
+        level_mapping = {
+            'debug': logging.DEBUG,
+            'info': logging.INFO,
+            'notice': logging.INFO,
+            'warning': logging.WARNING,
+            'error': logging.ERROR,
+            'critical': logging.CRITICAL,
+            'alert': logging.CRITICAL,
+            'emergency': logging.CRITICAL
+        }
+        
+        python_level = level_mapping.get(level.lower(), logging.INFO)
+        
+        # Format message with data
+        formatted_message = message
+        if data:
+            formatted_message = f"{message} | Data: {data}"
+        
+        # Log to tool-specific file
+        self.logger.log(python_level, formatted_message)
+        
+        # Note: MCP protocol logging is handled by the server's log() method
+        # Tools should call the server's log() method for MCP protocol logging
+    
+    def _should_log(self, level: str) -> bool:
+        """Check if a log level should be emitted based on current setting."""
+        # Get log level from client config
+        log_level = getattr(self.client.config, 'log_level', 'INFO').lower()
+        
+        level_priority = {
+            "debug": 0, "info": 1, "notice": 2, "warning": 3, 
+            "error": 4, "critical": 5, "alert": 6, "emergency": 7
+        }
+        current_priority = level_priority.get(log_level, 1)
+        message_priority = level_priority.get(level.lower(), 1)
+        return message_priority >= current_priority
+    
+    async def hybrid_log(self, ctx, level: str, message: str, data: dict = None):
+        """
+        Hybrid logging that respects log level configuration.
+        Logs to both MCP client (if level is appropriate) AND file.
+        """
+        # Always log to file (respects logger's own level)
+        self.log(level, message, data)
+        
+        # Only log to MCP client if level is appropriate
+        if self._should_log(level):
+            if level.lower() == 'debug':
+                await ctx.debug(message)
+            elif level.lower() in ['info', 'notice']:
+                await ctx.info(message)
+            elif level.lower() == 'warning':
+                await ctx.warning(message)
+            elif level.lower() in ['error', 'critical', 'alert', 'emergency']:
+                await ctx.error(message)
 
 
 class ThalesCDSPCSMTools:
@@ -58,14 +164,14 @@ class ThalesCDSPCSMTools:
         # Import and register consolidated tools from their new locations
         from .secrets.manage_secrets import ManageSecretsTools
         from .dfc_keys.manage_dfc_keys import ManageDFCKeysTools
-        from .auth.manage_auth import ManageAuthTools
+        from .auth_methods.auth_methods_manager import AuthMethodsManager
         from .customer_fragments.manage_customer_fragments import ManageCustomerFragmentsTools
         from .guidelines.security_guidelines import SecurityGuidelinesTools
         from .rotation.manage_rotation import ManageRotationTools
         # Register consolidated tool classes only
         self.add_tool_class(ManageSecretsTools(self.client))
         self.add_tool_class(ManageDFCKeysTools(self.client))
-        self.add_tool_class(ManageAuthTools(self.client))
+        self.add_tool_class(AuthMethodsManager(self.client))
         self.add_tool_class(ManageCustomerFragmentsTools(self.client))
         self.add_tool_class(SecurityGuidelinesTools(self.client))
         self.add_tool_class(ManageRotationTools(self.client))

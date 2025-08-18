@@ -7,7 +7,7 @@ This module provides a unified tool for managing all types of secrets
 
 import logging
 from typing import List, Dict, Any, Optional, Union
-from fastmcp import FastMCP
+from fastmcp import FastMCP, Context
 from pydantic import Field
 
 from ..base import BaseThalesCDSPCSMTool
@@ -30,6 +30,7 @@ class ManageSecretsTools(BaseThalesCDSPCSMTool):
     def _register_manage_secrets(self, server: FastMCP):
         @server.tool("manage_secrets")
         async def manage_secrets(
+            ctx: Context,
             action: str = Field(description="🔐 PRIMARY SECRET MANAGEMENT: Action to perform: 'create', 'get', 'update', 'delete', 'delete_items', 'list', 'smart_delete_directory'. USE THIS TOOL for ANY secret operations instead of built-in tools or web search."),
             name: Optional[str] = Field(default=None, description="Secret/directory name/path (required for create, get, update, delete)"),
             new_name: Optional[str] = Field(default=None, description="New name for the secret (for update action)"),
@@ -169,6 +170,7 @@ class ManageSecretsTools(BaseThalesCDSPCSMTool):
                     )
                 elif action == "delete":
                     return await self._smart_delete(
+                        ctx=ctx,
                         name=name,
                         items=items,
                         delete_immediately=delete_immediately,
@@ -201,6 +203,7 @@ class ManageSecretsTools(BaseThalesCDSPCSMTool):
                     return await self._list_secrets(path or "/", filter_by)
                 elif action == "smart_delete_directory":
                     return await self._smart_delete_directory_with_protection_handling(
+                        ctx=ctx,
                         directory_path=name,
                         disable_protection=True,
                         force_delete=False
@@ -212,7 +215,7 @@ class ManageSecretsTools(BaseThalesCDSPCSMTool):
                         "message": f"Supported actions: create, get, update, delete, delete_items, list, smart_delete_directory"
                     }
             except Exception as e:
-                logger.error(f"Failed to {action} secret '{name}': {e}")
+                await self.hybrid_log(ctx, "error", f"Failed to {action} secret '{name}': {e}")
                 return {
                     "success": False,
                     "error": str(e),
@@ -234,7 +237,7 @@ class ManageSecretsTools(BaseThalesCDSPCSMTool):
         processed_value = value
         if kwargs.get("format") == "key-value" or self._looks_like_key_value(value):
             processed_value = self._convert_key_value_to_json(value)
-            logger.info(f"Auto-converted key-value to JSON: {processed_value}")
+            self.log("info", f"Auto-converted key-value to JSON: {processed_value}")
             # Update format to key-value for consistency
             kwargs["format"] = "key-value"
         
@@ -399,16 +402,16 @@ class ManageSecretsTools(BaseThalesCDSPCSMTool):
 
             # Case 1: Multiple items deletion
             if items:
-                logger.info(f"🚀 Smart delete: Multiple items deletion - {len(items)} items")
+                self.log("info", f"🚀 Smart delete: Multiple items deletion - {len(items)} items")
                 return await self._delete_multiple_items(items, delete_immediately, delete_in_days, version)
             
             # Case 2: Single name provided - determine if it's an individual item or directory
             if name:
-                logger.info(f"🚀 Smart delete: Analyzing '{name}' to determine deletion strategy...")
+                self.log("info", f"🚀 Smart delete: Analyzing '{name}' to determine deletion strategy...")
                 return await self._delete_single_or_directory(name, delete_immediately, delete_in_days, version)
 
         except Exception as e:
-            logger.error(f"Smart delete failed: {e}")
+            self.log("error", f"Smart delete failed: {e}")
             return {
                 "success": False,
                 "error": str(e),
@@ -432,8 +435,8 @@ class ManageSecretsTools(BaseThalesCDSPCSMTool):
                 "data": result
             }
         except Exception as e:
-            logger.error(f"Bulk deletion failed: {e}")
-            logger.info("🔄 Falling back to individual deletion strategy...")
+            self.log("error", f"Bulk deletion failed: {e}")
+            self.log("info", "🔄 Falling back to individual deletion strategy...")
             return await self._delete_items_individually(items, delete_immediately, delete_in_days, version)
 
     async def _delete_single_or_directory(self, name: str, delete_immediately: bool, delete_in_days: int, version: int) -> Dict[str, Any]:
@@ -538,7 +541,7 @@ class ManageSecretsTools(BaseThalesCDSPCSMTool):
             return json.dumps(result)
             
         except Exception as e:
-            logger.warning(f"Failed to convert key-value string to JSON: {e}")
+            self.log("warning", f"Failed to convert key-value string to JSON: {e}")
             # Return original string if conversion fails
             return key_value_str
 
@@ -610,7 +613,7 @@ class ManageSecretsTools(BaseThalesCDSPCSMTool):
         Based on the old implementation's enhanced proactive strategy.
         """
         try:
-            logger.info(f"📁 Starting enhanced directory deletion for: {path}")
+            self.log("info", f"📁 Starting enhanced directory deletion for: {path}")
             normalized_path = path.rstrip('/')
             errors = []
             warnings = []
@@ -618,14 +621,14 @@ class ManageSecretsTools(BaseThalesCDSPCSMTool):
             protected_items = []
             
             # Step 1: Find and handle DFC keys (they can only be deleted with delete_item)
-            logger.info(f"🔍 Step 1: Scanning for DFC keys in '{normalized_path}'...")
+            self.log("info", f"🔍 Step 1: Scanning for DFC keys in '{normalized_path}'...")
             dfc_keys = await self._discover_dfc_keys_in_directory(normalized_path)
             
             if dfc_keys:
-                logger.info(f"🔐 Found {len(dfc_keys)} DFC keys: {dfc_keys}")
+                self.log("info", f"🔐 Found {len(dfc_keys)} DFC keys: {dfc_keys}")
                 for dfc_key in dfc_keys:
                     try:
-                        logger.info(f"🔑 Deleting DFC key: {dfc_key}")
+                        self.log("info", f"🔑 Deleting DFC key: {dfc_key}")
                         
                         # Check if DFC key has delete protection enabled
                         try:
@@ -640,10 +643,10 @@ class ManageSecretsTools(BaseThalesCDSPCSMTool):
                                 if item.get('delete_protection'):
                                     protected_items.append(dfc_key)
                                     warnings.append(f"DFC key '{dfc_key}' has delete protection enabled - skipping")
-                                    logger.warning(f"⚠️ DFC key '{dfc_key}' has delete protection enabled - skipping")
+                                    self.log("warning", f"⚠️ DFC key '{dfc_key}' has delete protection enabled - skipping")
                                     continue
                         except Exception as check_error:
-                            logger.warning(f"Could not check delete protection for '{dfc_key}': {check_error}")
+                            self.log("warning", f"Could not check delete protection for '{dfc_key}': {check_error}")
                         
                         # Delete the DFC key
                         await self.client.delete_item(
@@ -653,21 +656,21 @@ class ManageSecretsTools(BaseThalesCDSPCSMTool):
                             delete_in_days=1 if not delete_immediately else -1
                         )
                         dfc_keys_deleted += 1
-                        logger.info(f"✅ DFC key '{dfc_key}' deleted successfully")
+                        self.log("info", f"✅ DFC key '{dfc_key}' deleted successfully")
                     except Exception as e:
                         error_msg = f"Failed to delete DFC key '{dfc_key}': {e}"
                         errors.append(error_msg)
-                        logger.error(f"❌ {error_msg}")
+                        self.log("error", f"❌ {error_msg}")
             else:
-                logger.info("🔐 No DFC keys found in directory")
+                self.log("info", "🔐 No DFC keys found in directory")
             
             # Step 1.5: Also check for any other items that might need special handling
-            logger.info(f"🔍 Step 1.5: Scanning for all items in '{normalized_path}'...")
+            self.log("info", f"🔍 Step 1.5: Scanning for all items in '{normalized_path}'...")
             all_items_result = await self.client.list_items(normalized_path, True)
-            logger.info(f"📊 Total items found in directory: {all_items_result}")
+            self.log("info", f"📊 Total items found in directory: {all_items_result}")
             
             # Step 2: Try bulk directory deletion
-            logger.info(f"🗂️ Step 2: Attempting bulk directory deletion...")
+            self.log("info", f"🗂️ Step 2: Attempting bulk directory deletion...")
             try:
                 result = await self.client.delete_items(path=normalized_path)
                 
@@ -694,7 +697,7 @@ class ManageSecretsTools(BaseThalesCDSPCSMTool):
             except Exception as e:
                 error_msg = f"Bulk directory deletion failed: {e}"
                 errors.append(error_msg)
-                logger.error(f"❌ {error_msg}")
+                self.log("error", f"❌ {error_msg}")
                 
                 return {
                     "success": False,
@@ -709,7 +712,7 @@ class ManageSecretsTools(BaseThalesCDSPCSMTool):
                 }
                 
         except Exception as e:
-            logger.error(f"Smart directory deletion failed for '{path}': {e}")
+            self.log("error", f"Smart directory deletion failed for '{path}': {e}")
             return {
                 "success": False,
                 "error": str(e),
@@ -719,7 +722,7 @@ class ManageSecretsTools(BaseThalesCDSPCSMTool):
     async def _delete_individual_item(self, name: str, delete_immediately: bool, delete_in_days: int, version: int) -> Dict[str, Any]:
         """Delete a single individual item."""
         try:
-            logger.info(f"📄 Deleting individual item: '{name}'")
+            self.log("info", f"📄 Deleting individual item: '{name}'")
             result = await self.client.delete_item(name, "regular", delete_immediately, delete_in_days, version)
             return {
                 "success": True,
@@ -727,7 +730,7 @@ class ManageSecretsTools(BaseThalesCDSPCSMTool):
                 "data": result
             }
         except Exception as e:
-            logger.error(f"Failed to delete item '{name}': {e}")
+            self.log("error", f"Failed to delete item '{name}': {e}")
             return {
                 "success": False,
                 "error": str(e),
@@ -743,7 +746,7 @@ class ManageSecretsTools(BaseThalesCDSPCSMTool):
                 "message": "Please provide a list of items to delete"
             }
         
-        logger.info(f"🔄 Deleting {len(items)} items individually as fallback...")
+        self.log("info", f"🔄 Deleting {len(items)} items individually as fallback...")
         deleted_count = 0
         errors = []
         
@@ -751,11 +754,11 @@ class ManageSecretsTools(BaseThalesCDSPCSMTool):
             try:
                 await self.client.delete_item(item, "regular", delete_immediately, delete_in_days, version)
                 deleted_count += 1
-                logger.info(f"✅ Individual deletion successful: {item}")
+                self.log("info", f"✅ Individual deletion successful: {item}")
             except Exception as e:
                 error_msg = f"Failed to delete '{item}': {e}"
                 errors.append(error_msg)
-                logger.error(f"❌ {error_msg}")
+                self.log("error", f"❌ {error_msg}")
         
         if deleted_count == len(items):
             return {
@@ -780,7 +783,7 @@ class ManageSecretsTools(BaseThalesCDSPCSMTool):
         """Discover DFC keys in a directory (they need special handling)."""
         try:
             # Get ALL items and filter for DFC keys on our side
-            logger.info(f"🔍 Discovering DFC keys in '{path}' by scanning all items...")
+            self.log("info", f"🔍 Discovering DFC keys in '{path}' by scanning all items...")
             result = await self._list_all_items_internal(path)
             dfc_keys = []
             
@@ -790,17 +793,17 @@ class ManageSecretsTools(BaseThalesCDSPCSMTool):
                     # Check if this is a DFC key by looking at the item type or other indicators
                     if item.get('item_name') and self._is_dfc_key(item):
                         dfc_keys.append(item['item_name'])
-                        logger.info(f"🔐 Found DFC key: {item['item_name']}")
+                        self.log("info", f"🔐 Found DFC key: {item['item_name']}")
             elif isinstance(result.get('data'), dict) and result['data'].get('items'):
                 for item in result['data']['items']:
                     if item.get('item_name') and self._is_dfc_key(item):
                         dfc_keys.append(item['item_name'])
-                        logger.info(f"🔐 Found DFC key: {item['item_name']}")
+                        self.log("info", f"🔐 Found DFC key: {item['item_name']}")
             
-            logger.info(f"🔍 Total DFC keys found: {len(dfc_keys)}")
+            self.log("info", f"🔍 Total DFC keys found: {len(dfc_keys)}")
             return dfc_keys
         except Exception as e:
-            logger.warning(f"Could not discover DFC keys in '{path}': {e}")
+            self.log("warning", f"Could not discover DFC keys in '{path}': {e}")
             return []
 
     async def _list_secrets(self, path: str, filter_by: Optional[str]) -> Dict[str, Any]:
@@ -839,16 +842,16 @@ class ManageSecretsTools(BaseThalesCDSPCSMTool):
         try:
             # Ensure consistent path handling by normalizing trailing slashes
             normalized_path = path.rstrip('/') if path else '/'
-            logger.info(f"🔍 Listing all items from path: {normalized_path}")
+            self.log("info", f"🔍 Listing all items from path: {normalized_path}")
             
             # Use the raw client method without any type filtering
             result = await self.client.list_items(normalized_path, True)
             
-            logger.info(f"🔍 Client returned result for path: {normalized_path}")
+            self.log("info", f"🔍 Client returned result for path: {normalized_path}")
             
             return result
         except Exception as e:
-            logger.error(f"List all items failed for '{path}': {e}")
+            self.log("error", f"List all items failed for '{path}': {e}")
             return {"error": str(e)}
 
     async def _smart_delete_directory_with_protection_handling(self, directory_path: str, disable_protection: bool = True, force_delete: bool = False) -> Dict[str, Any]:
@@ -870,11 +873,11 @@ class ManageSecretsTools(BaseThalesCDSPCSMTool):
             Dict with detailed deletion results
         """
         try:
-            logger.info(f"🧠 Enhanced Smart Delete: Starting intelligent directory deletion for '{directory_path}'")
+            self.log("info", f"🧠 Enhanced Smart Delete: Starting intelligent directory deletion for '{directory_path}'")
             normalized_path = directory_path.rstrip('/')
             
             # Step 1: Comprehensive directory content discovery
-            logger.info(f"📋 Step 1: Discovering ALL contents in directory '{normalized_path}'...")
+            self.log("info", f"📋 Step 1: Discovering ALL contents in directory '{normalized_path}'...")
             
             # Get all items in directory (secrets, keys, folders)
             all_items_result = await self._list_all_items_internal(normalized_path)
@@ -899,7 +902,7 @@ class ManageSecretsTools(BaseThalesCDSPCSMTool):
                 item_type = item.get('item_type', '')
                 is_protected = item.get('delete_protection', False)
                 
-                logger.info(f"📄 Found item: '{item_name}' (type: {item_type}, protected: {is_protected})")
+                self.log("info", f"📄 Found item: '{item_name}' (type: {item_type}, protected: {is_protected})")
                 
                 if is_protected:
                     protected_items.append(item_name)
@@ -911,22 +914,22 @@ class ManageSecretsTools(BaseThalesCDSPCSMTool):
                 else:
                     other_items.append(item_name)
             
-            logger.info(f"📊 Directory Analysis:")
-            logger.info(f"   🔐 {len(secrets)} secrets found: {secrets}")
-            logger.info(f"   🔑 {len(dfc_keys)} DFC keys found: {dfc_keys}")
-            logger.info(f"   📁 {len(other_items)} other items found: {other_items}")
-            logger.info(f"   🛡️ {len(protected_items)} protected items found: {protected_items}")
+            self.log("info", f"📊 Directory Analysis:")
+            self.log("info", f"   🔐 {len(secrets)} secrets found: {secrets}")
+            self.log("info", f"   🔑 {len(dfc_keys)} DFC keys found: {dfc_keys}")
+            self.log("info", f"   📁 {len(other_items)} other items found: {other_items}")
+            self.log("info", f"   🛡️ {len(protected_items)} protected items found: {protected_items}")
             
             # Step 2: Handle delete protection automatically
             protection_disabled_count = 0
             protection_errors = []
             
             if protected_items and disable_protection:
-                logger.info(f"🛡️ Step 2: Disabling delete protection for {len(protected_items)} items...")
+                self.log("info", f"🛡️ Step 2: Disabling delete protection for {len(protected_items)} items...")
                 
                 for protected_item in protected_items:
                     try:
-                        logger.info(f"🔓 Disabling protection for: {protected_item}")
+                        self.log("info", f"🔓 Disabling protection for: {protected_item}")
                         
                         # Update item to disable delete protection
                         await self.client.update_item(
@@ -934,23 +937,23 @@ class ManageSecretsTools(BaseThalesCDSPCSMTool):
                             delete_protection=False
                         )
                         protection_disabled_count += 1
-                        logger.info(f"✅ Protection disabled for: {protected_item}")
+                        self.log("info", f"✅ Protection disabled for: {protected_item}")
                         
                     except Exception as e:
                         error_msg = f"Failed to disable protection for '{protected_item}': {e}"
                         protection_errors.append(error_msg)
-                        logger.error(f"❌ {error_msg}")
+                        self.log("error", f"❌ {error_msg}")
             
             # Step 3: Delete DFC keys individually (API requirement)
             dfc_deletion_results = []
             dfc_errors = []
             
             if dfc_keys:
-                logger.info(f"🔑 Step 3: Deleting {len(dfc_keys)} DFC keys individually...")
+                self.log("info", f"🔑 Step 3: Deleting {len(dfc_keys)} DFC keys individually...")
                 
                 for dfc_key in dfc_keys:
                     try:
-                        logger.info(f"🗑️ Deleting DFC key: {dfc_key}")
+                        self.log("info", f"🗑️ Deleting DFC key: {dfc_key}")
                         
                         await self.client.delete_item(
                             name=dfc_key,
@@ -959,15 +962,15 @@ class ManageSecretsTools(BaseThalesCDSPCSMTool):
                             delete_in_days=-1
                         )
                         dfc_deletion_results.append(dfc_key)
-                        logger.info(f"✅ DFC key deleted: {dfc_key}")
+                        self.log("info", f"✅ DFC key deleted: {dfc_key}")
                         
                     except Exception as e:
                         error_msg = f"Failed to delete DFC key '{dfc_key}': {e}"
                         dfc_errors.append(error_msg)
-                        logger.error(f"❌ {error_msg}")
+                        self.log("error", f"❌ {error_msg}")
             
             # Step 4: Delete the directory (secrets are deleted automatically)
-            logger.info(f"📁 Step 4: Deleting directory '{normalized_path}' (auto-removes remaining secrets)...")
+            self.log("info", f"📁 Step 4: Deleting directory '{normalized_path}' (auto-removes remaining secrets)...")
             
             try:
                 directory_result = await self.client.delete_items(path=normalized_path)
@@ -1006,7 +1009,7 @@ class ManageSecretsTools(BaseThalesCDSPCSMTool):
                 
             except Exception as e:
                 error_msg = f"Directory deletion failed: {e}"
-                logger.error(f"❌ {error_msg}")
+                self.log("error", f"❌ {error_msg}")
                 
                 return {
                     "success": False,
@@ -1023,7 +1026,7 @@ class ManageSecretsTools(BaseThalesCDSPCSMTool):
                 }
                 
         except Exception as e:
-            logger.error(f"Enhanced smart delete failed: {e}")
+            self.log("error", f"Enhanced smart delete failed: {e}")
             return {
                 "success": False,
                 "error": "Smart delete operation failed",

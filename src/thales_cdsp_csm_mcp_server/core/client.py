@@ -322,6 +322,82 @@ class ThalesCDSPCSMClient:
         logger.info("Customer fragments listed successfully")
         return result
     
+    async def export_customer_fragments(self, json: bool = False) -> Dict[str, Any]:
+        """Export customer fragments from Thales CSM Akeyless Vault."""
+        logger.info("Exporting customer fragments...")
+        
+        data = {
+            "json": json
+        }
+        
+        result = await self._make_request("gateway-download-customer-fragments", data)
+        logger.info("Customer fragments exported successfully")
+        return result
+    
+    async def create_api_key_auth_method(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Create a new API key authentication method."""
+        logger.info("Creating API key authentication method...")
+        
+        result = await self._make_request("auth-method-create-api-key", data)
+        logger.info("API key authentication method created successfully")
+        return result
+    
+    async def list_auth_methods(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """List authentication methods."""
+        logger.info("Listing authentication methods...")
+        
+        result = await self._make_request("auth-method-list", data)
+        logger.info("Authentication methods listed successfully")
+        return result
+    
+    async def get_auth_method(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Get a specific authentication method."""
+        logger.info("Getting authentication method...")
+        
+        result = await self._make_request("auth-method-get", data)
+        logger.info("Authentication method retrieved successfully")
+        return result
+    
+    async def delete_auth_method(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Delete a specific authentication method."""
+        logger.info("Deleting authentication method...")
+        
+        result = await self._make_request("auth-method-delete", data)
+        logger.info("Authentication method deleted successfully")
+        return result
+    
+    async def update_api_key_auth_method(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Update an API key authentication method."""
+        logger.info("Updating API key authentication method...")
+        
+        result = await self._make_request("auth-method-update-api-key", data)
+        logger.info("API key authentication method updated successfully")
+        return result
+    
+    async def delete_auth_methods(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Delete all authentication methods within a specific path."""
+        logger.info("Deleting authentication methods within path...")
+        
+        result = await self._make_request("delete-auth-methods", data)
+        logger.info("Authentication methods deleted successfully")
+        return result
+    
+    async def create_email_auth_method(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Create a new email authentication method."""
+        logger.info("Creating email authentication method...")
+        
+        result = await self._make_request("auth-method-create-email", data)
+        logger.info("Email authentication method created successfully")
+        return result
+    
+    async def update_email_auth_method(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Update an email authentication method."""
+        logger.info("Updating email authentication method...")
+        
+        result = await self._make_request("auth-method-update-email", data)
+        logger.info("Email authentication method updated successfully")
+        return result
+    
     async def _find_matching_customer_fragment(self, partial_uuid: str) -> Optional[str]:
         """
         Find a customer fragment that contains the partial UUID.

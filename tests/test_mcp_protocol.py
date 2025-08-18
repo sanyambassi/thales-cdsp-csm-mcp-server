@@ -114,7 +114,7 @@ async def test_stdio_mcp():
         expected_tools = [
             'manage_secrets',
             'manage_dfc_keys', 
-            'manage_auth',
+            'manage_auth_methods',
             'manage_customer_fragments',
             'security_guidelines',
             'manage_rotation'

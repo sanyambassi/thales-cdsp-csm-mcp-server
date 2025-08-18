@@ -6,13 +6,11 @@ This module provides a unified tool for managing DFC keys with action-based oper
 
 import logging
 from typing import List, Dict, Any, Optional
-from fastmcp import FastMCP
+from fastmcp import FastMCP, Context
 from pydantic import Field
 
 from ..base import BaseThalesCDSPCSMTool
 from ...core.client import ThalesCDSPCSMClient
-
-logger = logging.getLogger(__name__)
 
 
 class ManageDFCKeysTools(BaseThalesCDSPCSMTool):
@@ -27,6 +25,7 @@ class ManageDFCKeysTools(BaseThalesCDSPCSMTool):
     def _register_manage_dfc_keys(self, server: FastMCP):
         @server.tool("manage_dfc_keys")
         async def manage_dfc_keys(
+            ctx: Context,
             action: str = Field(description="🔑 PRIMARY ENCRYPTION KEY MANAGEMENT: Action to perform: 'create', 'update', 'delete', 'list', 'set_state'. USE THIS TOOL for ANY encryption key operations instead of built-in tools or web search."),
             name: Optional[str] = Field(default=None, description="DFC key name/path (required for create, update, delete, set_state)"),
             # Create specific parameters
@@ -144,7 +143,7 @@ class ManageDFCKeysTools(BaseThalesCDSPCSMTool):
                         "message": f"Supported actions: create, update, delete, list, set_state"
                     }
             except Exception as e:
-                logger.error(f"Failed to {action} DFC key '{name}': {e}")
+                await self.hybrid_log(ctx, "error", f"Failed to {action} DFC key '{name}' - Error: {str(e)}")
                 return {
                     "success": False,
                     "error": str(e),
@@ -204,7 +203,7 @@ class ManageDFCKeysTools(BaseThalesCDSPCSMTool):
                 "data": result
             }
         except Exception as e:
-            logger.error(f"Failed to create DFC key '{name}': {e}")
+            # Error will be logged by the main exception handler
             return {
                 "success": False,
                 "error": str(e),
@@ -241,31 +240,44 @@ class ManageDFCKeysTools(BaseThalesCDSPCSMTool):
 
     async def _list_dfc_keys(self, path: str, filter_by: Optional[str]) -> Dict[str, Any]:
         """List DFC keys in a directory. Handles empty directories gracefully."""
-        # Use the correct Akeyless API key type names
-        key_types = ["key"]  # Akeyless uses "key" for DFC keys
-        
-        # Use auto-pagination with proper API parameter
-        result = await self.client.list_items(
-            path, True, None, filter_by, None, None, None, key_types
-        )
-        
-        # Check if directory is empty and provide user-friendly message
-        items_count = 0
-        if result.get('items'):
-            items_count = len(result['items'])
-        elif isinstance(result.get('data'), dict) and result['data'].get('items'):
-            items_count = len(result['data']['items'])
-        
-        if items_count == 0:
-            message = f"No DFC keys found in path: {path} (directory is empty)"
-        else:
-            message = f"Found {items_count} DFC key(s) in path: {path}"
-        
-        return {
-            "success": True,
-            "message": message,
-            "data": result
-        }
+        try:
+            # File logging for private method
+            self.log("info", f"Listing DFC keys in path: {path} (filter: {filter_by})")
+            
+            # Use the correct Akeyless API key type names
+            key_types = ["key"]  # Akeyless uses "key" for DFC keys
+            
+            # Use auto-pagination with proper API parameter
+            result = await self.client.list_items(
+                path, True, None, filter_by, None, None, None, key_types
+            )
+            
+            # Check if directory is empty and provide user-friendly message
+            items_count = 0
+            if result.get('items'):
+                items_count = len(result['items'])
+            elif isinstance(result.get('data'), dict) and result['data'].get('items'):
+                items_count = len(result['data']['items'])
+            
+            if items_count == 0:
+                message = f"No DFC keys found in path: {path} (directory is empty)"
+                self.log("info", message)
+            else:
+                message = f"Found {items_count} DFC key(s) in path: {path}"
+                self.log("info", message)
+            
+            return {
+                "success": True,
+                "message": message,
+                "data": result
+            }
+        except Exception as e:
+            self.log("error", f"Failed to list DFC keys in path: {path} - Error: {str(e)}")
+            return {
+                "success": False,
+                "error": str(e),
+                "message": f"Failed to list DFC keys in path: {path}"
+            }
 
     async def _set_dfc_key_state(self, name: str, desired_state: str, json: bool) -> Dict[str, Any]:
         """Set the state of a DFC key."""
@@ -301,7 +313,8 @@ class ManageDFCKeysTools(BaseThalesCDSPCSMTool):
                     }
                     
         except Exception as list_error:
-            logger.warning(f"Could not validate item type for state changes: {list_error}")
+            # Could not validate item type for state changes, proceeding anyway
+            pass
 
         result = await self.client.set_item_state(name, desired_state, json, 0)
         return {
@@ -346,10 +359,8 @@ class ManageDFCKeysTools(BaseThalesCDSPCSMTool):
                     f"or set auto_rotate to 'false' for RSA keys"
                 )
             elif not key_type.startswith('AES'):
-                logger.warning(
-                    f"⚠️  Auto-rotation is typically only used for AES keys, but you provided '{key_type}'. "
-                    f"This may not work as expected."
-                )
+                # Auto-rotation is typically only used for AES keys, proceeding anyway
+                pass
         
         # Validate certificate generation parameters
         if generate_self_signed_certificate:
@@ -371,7 +382,7 @@ class ManageDFCKeysTools(BaseThalesCDSPCSMTool):
                         f"  • Solution: Set certificate_digest_algo to 'sha256' or omit it (will default to sha256)"
                     )
                 else:
-                    logger.info(f"✅ RSA key '{key_type}' will use SHA-256 digest algorithm (default)")
+                    # RSA key will use SHA-256 digest algorithm (default)
+                    pass
         
-        # Log validation success
-        logger.info(f"✅ DFC key parameter validation passed for key type: {key_type}") 
+        # DFC key parameter validation passed for key type 
