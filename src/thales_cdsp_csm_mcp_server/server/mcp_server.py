@@ -813,8 +813,18 @@ Start with manage_secrets for most operations, then use specialized tools as nee
             
             # List consolidated tools
             print(f"\n   📋 CONSOLIDATED TOOLS ({len(self.tools.tools)}):")
+            # Map internal names to public names for display
+            tool_name_mapping = {
+                'auth_methods_manager': 'manage_auth_methods',
+                'manage_customer_fragments': 'manage_customer_fragments',
+                'manage_dfc_keys': 'manage_dfc_keys',
+                'manage_rotation': 'manage_rotation',
+                'manage_secrets': 'manage_secrets',
+                'security_guidelines': 'security_guidelines'
+            }
             for tool_name in sorted(self.tools.tools.keys()):
-                print(f"      • {tool_name}")
+                public_name = tool_name_mapping.get(tool_name, tool_name)
+                print(f"      • {public_name}")
             
             # List prompts
             print(f"\n   📝 PROMPTS ({prompt_count}):")

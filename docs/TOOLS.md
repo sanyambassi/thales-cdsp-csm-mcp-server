@@ -8,7 +8,7 @@ Available tools in the Thales CSM MCP Server.
 |------|-------------|--------------|
 | `manage_secrets` | Universal secret management (static, dynamic, rotated) | `create`, `get`, `update`, `delete`, `delete_items`, `list`, `smart_delete_directory` |
 | `manage_dfc_keys` | Encryption key management (AES, RSA) | `create`, `update`, `delete`, `list`, `set_state` |
-| `manage_auth` | Authentication method management | `create`, `update`, `delete`, `list`, `get` |
+| `manage_auth_methods` | Authentication method management | `create_api_key`, `create_email`, `update`, `delete`, `delete_auth_methods`, `list`, `get` |
 | `manage_rotation` | Secret and key rotation management | `set_rotation`, `update_settings`, `list_rotation`, `get_rotation_status` |
 | `manage_customer_fragments` | Customer fragment management | `create`, `delete`, `list` |
 | `security_guidelines` | Security best practices | `compliance` |
@@ -91,28 +91,28 @@ manage_dfc_keys action=delete name=/my/key
 
 ## 🔒 **Authentication Management**
 
-### **Primary Tool: `manage_auth`**
+### **Primary Tool: `manage_auth_methods`**
 Manage authentication methods for secure access.
 
 #### **Authentication Operations**
 ```bash
 # Create API key method
-manage_auth action=create name=/my/api_key method_type=api_key access_id="your_id" access_key="your_key"
+manage_auth_methods action=create_api_key name=/my/api_key access_id="your_id" access_key="your_key"
 
 # Create AWS IAM method
-manage_auth action=create name=/my/aws_auth method_type=aws_iam aws_access_key_id="AKIA..." aws_secret_access_key="..." aws_region="us-east-1"
+manage_auth_methods action=create_api_key name=/my/aws_auth aws_access_key_id="AKIA..." aws_secret_access_key="..." aws_region="us-east-1"
 
 # Create Azure AD method
-manage_auth action=create name=/my/azure_auth method_type=azure_ad tenant_id="..." client_id="..." client_secret="..."
+manage_auth_methods action=create_api_key name=/my/azure_auth tenant_id="..." client_id="..." client_secret="..."
 
 # List methods
-manage_auth action=list
+manage_auth_methods action=list
 
 # Update method
-manage_auth action=update name=/my/api_key method_type=api_key access_key="new_key"
+manage_auth_methods action=update name=/my/api_key access_key="new_key"
 
 # Delete method
-manage_auth action=delete name=/my/api_key
+manage_auth_methods action=delete name=/my/api_key
 ```
 
 #### **Supported Methods**

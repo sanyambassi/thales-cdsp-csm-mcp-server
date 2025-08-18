@@ -133,7 +133,7 @@ uv run python main.py --transport streamable-http --host localhost --port 8000
 |------|-------------|
 | `manage_secrets` | Create, read, update, delete secrets |
 | `manage_dfc_keys` | Manage encryption keys |
-| `manage_auth` | Authentication and access control |
+| `manage_auth_methods` | Authentication and access control |
 | `manage_rotation` | Secret rotation policies |
 | `manage_customer_fragments` | Enhanced security features |
 | `security_guidelines` | Security best practices |

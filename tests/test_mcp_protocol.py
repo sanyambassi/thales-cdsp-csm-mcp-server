@@ -127,6 +127,8 @@ async def test_stdio_mcp():
         
         # Step 4: List items from root directory using manage_secrets
         print("\n📝 Step 4: List items from root directory")
+        
+        # Simple single request approach to avoid pagination issues
         list_items_request = {
             "jsonrpc": "2.0",
             "id": 4,
@@ -149,8 +151,6 @@ async def test_stdio_mcp():
         assert list_items_response, "No response from list_items"
         
         list_items_data = json.loads(list_items_response)
-        # Full response data available for debugging if needed
-        
         assert 'result' in list_items_data, f"List items failed: {list_items_data}"
         
         # Parse the consolidated tool response
@@ -195,11 +195,138 @@ async def test_stdio_mcp():
                 print(f"      📄 {item}")
         
         # Display folders
-        for folder in folders:
+        for folder in sorted(folders):
             print(f"      📁 {folder}")
+        
+        # Show pagination info if available
+        if 'data' in result and isinstance(result['data'], dict):
+            next_page = result['data'].get('next_page')
+            if next_page:
+                print(f"   📄 Pagination: More results available (next_page token present)")
+                print(f"      Note: This test shows first page only. Manual testing can follow next_page tokens.")
+        
+        # Summary of what we found
+        print(f"\n   📋 SUMMARY:")
+        print(f"      • Root directory contains {len(items)} items and {len(folders)} folders")
+        if items:
+            print(f"      • Items are directly accessible in root")
+        else:
+            print(f"      • No items in root - secrets are likely in subdirectories")
+        if folders:
+            print(f"      • Available subdirectories: {', '.join(sorted(folders))}")
+            print(f"      • To see actual secrets, you would need to explore these subdirectories")
+        
+        # Step 5: List DFC keys using manage_dfc_keys
+        print("\n📝 Step 5: List DFC keys")
+        
+        # Simple single request for DFC keys
+        dfc_keys_request = {
+            "jsonrpc": "2.0",
+            "id": 5,
+            "method": "tools/call",
+            "params": {
+                "name": "manage_dfc_keys",
+                "arguments": {
+                    "action": "list",
+                    "path": "/"
+                }
+            }
+        }
+        
+        dfc_keys_str = json.dumps(dfc_keys_request) + "\n"
+        process.stdin.write(dfc_keys_str)
+        process.stdin.flush()
+        
+        # Read DFC keys response
+        dfc_keys_response = process.stdout.readline()
+        assert dfc_keys_response, "No response from DFC keys list"
+        
+        dfc_keys_data = json.loads(dfc_keys_response)
+        assert 'result' in dfc_keys_data, f"DFC keys list failed: {dfc_keys_data}"
+        
+        dfc_result = dfc_keys_data['result']
+        dfc_message = dfc_result.get('message', 'No message')
+        
+        print(f"   ✅ DFC Keys Response: {dfc_message}")
+        
+        # Parse DFC keys data
+        dfc_items = []
+        dfc_folders = []
+        
+        # First try direct data field
+        if 'data' in dfc_result:
+            dfc_data = dfc_result['data']
+            if isinstance(dfc_data, dict):
+                dfc_items = dfc_data.get('items', [])
+                dfc_folders = dfc_data.get('folders', [])
+            elif isinstance(dfc_data, list):
+                dfc_items = dfc_data
+        
+        # If no items found, check structuredContent (this is where the actual data is)
+        if not dfc_items and 'structuredContent' in dfc_result:
+            structured_data = dfc_result['structuredContent']
+            if 'data' in structured_data:
+                dfc_data = structured_data['data']
+                if isinstance(dfc_data, dict):
+                    dfc_items = dfc_data.get('items', [])
+                    dfc_folders = dfc_data.get('folders', [])
+                elif isinstance(dfc_data, list):
+                    dfc_items = dfc_data
+        
+        print(f"   🔑 Found {len(dfc_items)} DFC keys and {len(dfc_folders)} DFC key folders:")
+        
+        # Display DFC key items
+        for item in dfc_items:
+            if isinstance(item, dict):
+                item_name = item.get('item_name', item.get('name', item.get('path', item.get('id', 'Unknown'))))
+                item_type = item.get('item_type', item.get('type', 'Unknown'))
+                print(f"      🔑 {item_name} ({item_type})")
+            else:
+                print(f"      🔑 {item}")
+        
+        # Display DFC key folders
+        for folder in sorted(dfc_folders):
+            print(f"      📁 {folder}")
+        
+        # Summary for DFC keys
+        print(f"\n   📋 DFC KEYS SUMMARY:")
+        print(f"      • Root directory contains {len(dfc_items)} DFC keys and {len(dfc_folders)} DFC key folders")
+        if dfc_items:
+            print(f"      • DFC keys are directly accessible in root")
+        else:
+            print(f"      • No DFC keys in root - they may be in subdirectories")
+        if dfc_folders:
+            print(f"      • Available DFC key subdirectories: {', '.join(sorted(dfc_folders))}")
+        
+        # Show pagination info for DFC keys if available
+        dfc_next_page = None
+        if 'data' in dfc_result and isinstance(dfc_result['data'], dict):
+            dfc_next_page = dfc_result['data'].get('next_page')
+        elif 'structuredContent' in dfc_result and 'data' in dfc_result['structuredContent']:
+            dfc_next_page = dfc_result['structuredContent']['data'].get('next_page')
+        
+        if dfc_next_page:
+            print(f"   📄 DFC Keys Pagination: More results available (next_page token present)")
+            print(f"      Note: This test shows first page only. Manual testing can follow next_page tokens.")
+        else:
+            print(f"   📄 DFC Keys Pagination: No more pages (single page result)")
+        
+        # Final test summary
+        print(f"\n" + "="*60)
+        print(f"🎯 TEST COMPLETION SUMMARY")
+        print(f"="*60)
+        print(f"✅ Protocol initialization: SUCCESS")
+        print(f"✅ Tools listing: SUCCESS ({len(tools)} tools found)")
+        print(f"✅ Secrets listing: SUCCESS ({len(items)} items, {len(folders)} folders)")
+        print(f"✅ DFC keys listing: SUCCESS ({len(dfc_items)} keys, {len(dfc_folders)} folders)")
+        print(f"📋 Total folders found: {len(set(folders + dfc_folders))}")
+        print(f"📋 Total items found: {len(items) + len(dfc_items)}")
+        print(f"📄 Pagination: Available for both secrets and DFC keys")
+        print(f"💡 Next steps: Explore subdirectories to see actual content")
+        print(f"="*60)
             
     except Exception as e:
-        print(f"Error: {e}")
+        print(f"❌ Test failed with error: {e}")
         raise
     finally:
         # Clean up

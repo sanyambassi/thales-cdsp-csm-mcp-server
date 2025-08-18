@@ -136,16 +136,19 @@ class ThalesCDSPCSMTools:
     
     def add_tool_class(self, tool_instance: BaseThalesCDSPCSMTool):
         """Add a tool class instance to the registry."""
-        # Convert camelCase to snake_case and remove 'tools' suffix
+        # Convert PascalCase to snake_case and remove 'Tools' suffix
         class_name = tool_instance.__class__.__name__
         
         # Remove 'Tools' suffix first
         if class_name.endswith('Tools'):
             class_name = class_name[:-5]  # Remove 'Tools'
         
-        # Convert camelCase to snake_case
+        # Convert to snake_case with acronym handling (e.g., DFCKeys -> dfc_keys)
         import re
-        tool_name = re.sub(r'([a-z0-9])([A-Z])', r'\1_\2', class_name).lower()
+        # First split when a sequence of capitals is followed by a lowercase letter
+        name_with_acronyms_split = re.sub(r'([A-Z]+)([A-Z][a-z])', r'\1_\2', class_name)
+        # Then do the standard lower-to-upper boundary split
+        tool_name = re.sub(r'([a-z0-9])([A-Z])', r'\1_\2', name_with_acronyms_split).lower()
         
         self.tools[tool_name] = tool_instance
         if logger.isEnabledFor(logging.INFO):
