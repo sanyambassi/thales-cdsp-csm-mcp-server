@@ -11,6 +11,8 @@ Before you begin, ensure you have the following installed on your system:
 - **Python 3.8+**: Required for running the MCP server
 - **uv**: Modern Python package manager (recommended) or pip
 - **git**: For cloning the repository
+- **dotenv**: Environment variable management
+- **fastmcp**: MCP server framework
 - **Thales CipherTrust Manager access**
 - **Valid Akeyless credentials**
 
@@ -55,6 +57,30 @@ brew install git
 
 # Install git (Windows)
 # Download from https://git-scm.com
+```
+
+#### **dotenv**
+```bash
+# Check if python-dotenv is installed
+python -c "import dotenv; print('dotenv available')"
+
+# Install python-dotenv
+pip install python-dotenv
+
+# Verify installation
+python -c "import dotenv; print(f'dotenv version: {dotenv.__version__}')"
+```
+
+#### **fastmcp**
+```bash
+# Check if fastmcp is installed
+python -c "import fastmcp; print('fastmcp available')"
+
+# Install fastmcp
+pip install fastmcp
+
+# Verify installation
+python -c "import fastmcp; print(f'fastmcp version: {fastmcp.__version__}')"
 ```
 
 ## 🚀 **What It Does**
