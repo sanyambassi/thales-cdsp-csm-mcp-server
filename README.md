@@ -4,6 +4,23 @@
 
 Simple MCP server for Thales CipherTrust Secrets Management, powered by Akeyless.
 
+## 🎬 **Demo Videos**
+
+> **📹 Part I: Usage & Functionality** - [Watch on YouTube](https://youtu.be/zgpvsL_GY64)
+> 
+> *This video demonstrates:*
+> - Setting up Cursor AI and Claude Desktop integration
+> - Creating and managing secrets through AI chat
+> - Security compliance workflows
+> - Example prompts and functionality
+
+> **📹 Part II: Deployment & Installation** - [Watch on YouTube](https://youtu.be/XLTQ31hGzeU)
+> 
+> *This video covers:*
+> - Step-by-step installation process
+> - Configuration and setup
+> - Deployment options
+
 ## 📋 **Prerequisites**
 
 Before you begin, ensure you have the following installed on your system:
@@ -90,15 +107,6 @@ python -c "import fastmcp; print(f'fastmcp version: {fastmcp.__version__}')"
 - **Authentication Methods**: Manage Authentication Methods
 - **Security**: Guidelines and best practices
 - **MCP Protocol**: Model Context Protocol compliance
-
-## 🎬 **Demo Video**
-
-> **📹 Coming Soon!** Watch how to integrate this MCP server with AI assistants and manage secrets effortlessly.
-
-> *Demo will showcase:*
-> - Setting up Cursor AI and Claude Desktop integration
-> - Creating and managing secrets through AI chat
-> - Security compliance workflows
 
 ## ⚡ **Quick Start**
 
