@@ -188,6 +188,7 @@ curl http://localhost:8000/health
 - **[TRANSPORT_MODES.md](docs/TRANSPORT_MODES.md)** - How to run
 - **[TOOLS.md](docs/TOOLS.md)** - What tools do
 - **[TESTING.md](docs/TESTING.md)** - Complete testing guide
+- **[AI Assistant Configs](config)** - MCP json examples for AI Assistants
 
 ## 🎯 **Use Cases**
 
