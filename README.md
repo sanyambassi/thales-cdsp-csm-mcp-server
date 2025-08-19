@@ -9,8 +9,8 @@ Simple MCP server for Thales CipherTrust Secrets Management, powered by Akeyless
 > **📹 Part I: Usage & Functionality** - [Watch on YouTube](https://youtu.be/zgpvsL_GY64)
 > 
 > *This video demonstrates:*
-> - Setting up Cursor AI and Claude Desktop integration
-> - Creating and managing secrets through AI chat
+> - Setting up Cursor AI integration
+> - Creating and managing secrets and DFC Keys through AI chat
 > - Security compliance workflows
 > - Example prompts and functionality
 
