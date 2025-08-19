@@ -105,6 +105,8 @@ python -c "import fastmcp; print(f'fastmcp version: {fastmcp.__version__}')"
 - **Secrets Management**: Create, read, update, delete secrets
 - **DFC Key Management**: DFC encryption keys (AES, RSA)
 - **Authentication Methods**: Manage Authentication Methods
+- **Roles**: Manage Roles
+- **Targets**: Manage Targets
 - **Security**: Guidelines and best practices
 - **MCP Protocol**: Model Context Protocol compliance
 
@@ -171,6 +173,10 @@ uv run python main.py --transport streamable-http --host localhost --port 8000
 | `manage_rotation` | Secret rotation policies |
 | `manage_customer_fragments` | Enhanced security features |
 | `security_guidelines` | Security best practices |
+| `manage_roles` | List and get role information |
+| `manage_targets` | List and get target information |
+| `manage_analytics` | Get analytics and monitoring data |
+| `manage_account` | Get account settings and licensing |
 
 ## 🔍 **Test It**
 

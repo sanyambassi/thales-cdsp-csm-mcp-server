@@ -12,6 +12,10 @@ Available tools in the Thales CSM MCP Server.
 | `manage_rotation` | Secret and key rotation management | `set_rotation`, `update_settings`, `list_rotation`, `get_rotation_status` |
 | `manage_customer_fragments` | Customer fragment management | `create`, `delete`, `list` |
 | `security_guidelines` | Security best practices | `compliance` |
+| `manage_roles` | Role management and access control | `list`, `get` |
+| `manage_targets` | Target management and configuration | `list`, `get` |
+| `manage_analytics` | Analytics and monitoring data | `get` |
+| `manage_account` | Account settings and licensing | `get` |
 
 ## 🔐 **Secret Management**
 
@@ -164,6 +168,144 @@ security_guidelines compliance=general
 # Get specific compliance guidelines
 security_guidelines compliance=ISO27001
 ```
+
+## 👥 **Role Management**
+
+### **Primary Tool: `manage_roles`**
+Manage roles and access control in the Thales CSM Akeyless Vault.
+
+#### **Role Operations**
+```bash
+# List all roles
+manage_roles action=list
+
+# List roles with filter
+manage_roles action=list filter="admin"
+
+# List roles with JSON output
+manage_roles action=list json=true
+
+# Get specific role details
+manage_roles action=get name="admin-role"
+
+# Get role details with JSON output
+manage_roles action=get name="admin-role" json=true
+```
+
+#### **Role Features**
+- **Filtering**: Search roles by name pattern
+- **Pagination**: Support for large role lists
+- **JSON Output**: Structured data format for programmatic use
+- **Universal Identity**: Support for universal identity authentication
+
+## 🎯 **Target Management**
+
+### **Primary Tool: `manage_targets`**
+Manage targets and their configurations in the Thales CSM Akeyless Vault.
+
+#### **Target Operations**
+```bash
+# List all targets
+manage_targets action=list
+
+# List targets with filter
+manage_targets action=list filter="database"
+
+# List targets by type
+manage_targets action=list target_types=["mysql", "postgres"]
+
+# List targets with JSON output
+manage_targets action=list json=true
+
+# Get specific target details
+manage_targets action=get name="mysql-database"
+
+# Get target details with versions
+manage_targets action=get name="mysql-database" show_versions=true
+
+# Get specific target version
+manage_targets action=get name="mysql-database" target_version=2
+
+# Get target details with JSON output
+manage_targets action=get name="mysql-database" json=true
+```
+
+#### **Supported Target Types**
+- **Databases**: `hanadb`, `cassandra`, `mysql`, `mongodb`, `snowflake`, `mssql`, `redshift`, `postgres`, `oracle`
+- **Cloud Platforms**: `aws`, `azure`, `gcp`, `gke`, `eks`, `k8s`
+- **Services**: `ssh`, `rabbitmq`, `artifactory`, `dockerhub`, `github`, `chef`, `web`, `salesforce`
+- **Security**: `venafi`, `ldap`
+
+#### **Target Features**
+- **Type Filtering**: Filter targets by specific types
+- **Version Support**: Include all target versions in responses
+- **Version Control**: Get specific target versions by version number
+- **Pagination**: Support for large target lists
+- **JSON Output**: Structured data format for programmatic use
+- **Universal Identity**: Support for universal identity authentication
+
+## 📊 **Analytics & Monitoring**
+
+### **Primary Tool: `manage_analytics`**
+Get comprehensive analytics and monitoring data with client-side filtering capabilities.
+
+#### **Analytics Operations**
+```bash
+# Get all analytics data
+manage_analytics action=get
+
+# Get analytics with JSON output
+manage_analytics action=get json=true
+
+# Filter by item type
+manage_analytics action=get filter_by_type="Targets"
+
+# Filter by certificate risk
+manage_analytics action=get filter_by_risk="Expired"
+
+# Filter by product
+manage_analytics action=get filter_by_product="sm"
+
+# Combine filters
+manage_analytics action=get filter_by_type="Static Secrets" filter_by_product="sm"
+```
+
+#### **Analytics Features**
+- **Item Counts**: Comprehensive resource type statistics
+- **Geographic Data**: Usage patterns by location
+- **Request Metrics**: Volume and performance data
+- **Certificate Health**: Expiry and risk assessment
+- **Client Usage**: Authentication method analytics
+- **Product Statistics**: SM, ADP, SRA usage reports
+- **Client-Side Filtering**: Filter results without API calls
+
+## ⚙️ **Account Administration**
+
+### **Primary Tool: `manage_account`**
+Get account settings, licensing information, and administrative configuration.
+
+#### **Account Operations**
+```bash
+# Get account settings
+manage_account action=get
+
+# Get account settings with JSON output
+manage_account action=get json=true
+```
+
+#### **Account Information**
+- **Company Details**: Name, address, contact information
+- **Licensing**: Tier levels and SLA information
+- **Product Settings**: Configuration for SM, ADP, SRA
+- **Version Control**: Object versioning policies and limits
+- **System Access**: JWT TTL and authentication settings
+- **Security Policies**: Sharing and data protection configuration
+
+#### **Administrative Features**
+- **License Verification**: Check current tier and SLA levels
+- **Capacity Planning**: Review version limits and policies
+- **Compliance**: Verify security and sharing policies
+- **System Configuration**: Monitor account settings and limits
 
 ## ⚠️ **Important Notes**
 

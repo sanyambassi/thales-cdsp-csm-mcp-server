@@ -171,6 +171,10 @@ class ThalesCDSPCSMTools:
         from .customer_fragments.manage_customer_fragments import ManageCustomerFragmentsTools
         from .guidelines.security_guidelines import SecurityGuidelinesTools
         from .rotation.manage_rotation import ManageRotationTools
+        from .roles.manage_roles import ManageRolesTools
+        from .targets.manage_targets import ManageTargetsTools
+        from .monitoring.manage_analytics import ManageAnalyticsTools
+        from .administration.manage_account import ManageAccountTools
         # Register consolidated tool classes only
         self.add_tool_class(ManageSecretsTools(self.client))
         self.add_tool_class(ManageDFCKeysTools(self.client))
@@ -178,6 +182,10 @@ class ThalesCDSPCSMTools:
         self.add_tool_class(ManageCustomerFragmentsTools(self.client))
         self.add_tool_class(SecurityGuidelinesTools(self.client))
         self.add_tool_class(ManageRotationTools(self.client))
+        self.add_tool_class(ManageRolesTools(self.client))
+        self.add_tool_class(ManageTargetsTools(self.client))
+        self.add_tool_class(ManageAnalyticsTools(self.client))
+        self.add_tool_class(ManageAccountTools(self.client))
         
         if logger.isEnabledFor(logging.INFO):
             logger.info(f"Registered {len(self.tools)} consolidated tools") 
