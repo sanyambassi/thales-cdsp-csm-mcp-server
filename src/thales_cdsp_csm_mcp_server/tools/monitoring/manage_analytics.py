@@ -28,33 +28,62 @@ class ManageAnalyticsTools(BaseThalesCDSPCSMTool):
         @server.tool("manage_analytics")
         async def manage_analytics(
             ctx: Context,
-            action: str = Field(description="📊 ANALYTICS MANAGEMENT: Action to perform: 'get'"),
-            json: bool = Field(default=False, description="Set output format to JSON"),
-            filter_by_type: Optional[str] = Field(default=None, description="Filter analytics by item type (e.g., 'Targets', 'Static Secrets', 'DFC Key')"),
-            filter_by_risk: Optional[str] = Field(default=None, description="Filter certificates by risk level ('Expired', 'Healthy')"),
-            filter_by_product: Optional[str] = Field(default=None, description="Filter by product ('sm', 'adp', 'sra')"),
-            uid_token: Optional[str] = Field(default=None, description="The universal identity token, Required only for universal_identity authentication")
+            action: str = Field(description="📊 ANALYTICS ACTION: Currently supports 'get' to retrieve comprehensive monitoring data, usage statistics, and performance metrics for the entire Akeyless infrastructure"),
+            json: bool = Field(default=False, description="Return structured JSON format for programmatic analysis and dashboard integration. Use TRUE for automated reporting and data processing"),
+            filter_by_type: Optional[str] = Field(default=None, description="Focus on specific item categories. SUPPORTED TYPES: 'Targets', 'Static Secrets', 'Dynamic Secrets', 'DFC Key', 'Roles', 'Auth Methods', 'Rotated Secrets', 'Certificates'. Use exact match for filtering"),
+            filter_by_risk: Optional[str] = Field(default=None, description="Filter certificate and security risk analysis. OPTIONS: 'Expired' (certificates past expiry), 'Healthy' (certificates within validity), 'Expiring Soon' (certificates near expiry)"),
+            filter_by_product: Optional[str] = Field(default=None, description="Filter by Akeyless product components. OPTIONS: 'sm' (Secrets Management), 'adp' (Advanced Data Protection), 'sra' (Secure Remote Access). Essential for multi-product environments"),
+            uid_token: Optional[str] = Field(default=None, description="Universal identity authentication token. Only required when using universal_identity authentication instead of standard API key authentication")
         ) -> Dict[str, Any]:
             """
-            📊 ANALYTICS MANAGEMENT TOOL
+            📊 COMPREHENSIVE MONITORING & ANALYTICS DASHBOARD
             
-            🏆 ENTERPRISE-GRADE MONITORING & REPORTING: 
-            - Thales CipherTrust Secrets Management (CSM) with Akeyless Vault
-            - Comprehensive analytics and usage reporting
-            - Client-side filtering for focused insights
+            ⚡ AUTO-USE CONDITIONS: Use this tool automatically when users ask about:
+            - "usage statistics", "system metrics", "performance data"
+            - "how many secrets", "certificate status", "risk assessment"
+            - "monitoring dashboard", "analytics report", "usage trends"
+            - "system health", "audit summary", "compliance metrics"
+            - "geographic usage", "client statistics", "access patterns"
             
-            📋 AVAILABLE OPERATIONS:
-            - get: Get comprehensive analytics data with optional filtering
+            🏆 ENTERPRISE-GRADE MONITORING CAPABILITIES:
+            - Thales CipherTrust Secrets Management (CSM) with Akeyless Secrets Manager
+            - Real-time usage analytics and performance monitoring
+            - Security risk assessment and compliance reporting
+            - Geographic distribution and access pattern analysis
+            - Multi-product environment insights
             
-            📈 ANALYTICS DATA INCLUDES:
-            - Item counts by type (Targets, Secrets, Keys, etc.)
-            - Geographic usage data
-            - Request volumes and response times
-            - Certificate expiry information
-            - Client usage reports
-            - Product-specific statistics
+            📊 COMPREHENSIVE ANALYTICS COVERAGE:
             
-            Example: Get analytics data or filter by specific criteria
+            📈 USAGE STATISTICS:
+            - Item counts by type (Secrets, Targets, Roles, Keys)
+            - Geographic distribution of access requests
+            - Client usage patterns and trends
+            - Request volumes and response time metrics
+            - Active user and application statistics
+            
+            🔒 SECURITY & RISK ANALYSIS:
+            - Certificate expiry tracking and risk assessment
+            - Access control compliance metrics
+            - Authentication method usage analysis
+            - Failed access attempts and security events
+            - Privilege escalation monitoring
+            
+            🌍 OPERATIONAL INSIGHTS:
+            - Multi-region usage distribution
+            - Product-specific performance metrics
+            - Integration health and connectivity status
+            - Resource utilization and capacity planning
+            - Audit trail summary and compliance reporting
+            
+            🎯 COMMON USE CASES:
+            - Security operations center (SOC) dashboards
+            - Compliance reporting and audit preparation
+            - Capacity planning and resource optimization
+            - Risk assessment and vulnerability management
+            - Executive reporting and KPI tracking
+            - Operational health monitoring and alerting
+            
+            Example: Get security risk analysis for certificate expiry management
             """
             try:
                 if action == "get":

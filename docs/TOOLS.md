@@ -16,6 +16,7 @@ Available tools in the Thales CSM MCP Server.
 | `manage_targets` | Target management and configuration | `list`, `get` |
 | `manage_analytics` | Analytics and monitoring data | `get` |
 | `manage_account` | Account settings and licensing | `get` |
+| `get_api_reference` | API reference for native integrations | `get` |
 
 ## 🔐 **Secret Management**
 
@@ -313,3 +314,68 @@ manage_account action=get json=true
 - **Action Required**: Every operation requires an `action` parameter
 - **Error Handling**: All tools return structured responses with success/error indicators
 - **Enterprise Security**: Built on Thales CipherTrust CSM with Akeyless Vault technology
+
+## 🔗 **API Reference & Native Integrations**
+
+### **Primary Tool: `get_api_reference`**
+Get complete API reference information to build applications that directly integrate with Thales CipherTrust/Akeyless APIs.
+
+#### **API Reference Operations**
+```bash
+# Get S3 workflow reference
+get_api_reference api_endpoint=workflow language=python include_error_handling=true
+
+# Get authentication API reference
+get_api_reference api_endpoint=auth language=python
+
+# Get secret retrieval API reference
+get_api_reference api_endpoint=retrieve-secret language=python
+
+# Get general API reference
+get_api_reference language=python
+```
+
+#### **Supported Endpoints**
+- **`workflow`** or **`generic_workflow`** - Core Akeyless integration patterns
+- **`s3_workflow`** - Complete S3 integration workflow
+- **`auth`** - Authentication endpoint reference
+- **`retrieve-secret`** - Secret retrieval endpoint reference
+- **`list-secrets`** - List secrets endpoint reference
+- **`list-roles`** - List roles endpoint reference
+- **`list-targets`** - List targets endpoint reference
+
+#### **API Reference Features**
+- **Complete Workflows**: Full implementation examples for common use cases
+- **Multiple Languages**: Code examples in Python (more languages planned)
+- **Error Handling**: Comprehensive error handling and retry logic examples
+- **Best Practices**: Security and production deployment guidance
+- **Native Integration**: Build apps that directly call Akeyless APIs
+
+#### **Use Cases**
+- **AI Assistant Development**: Enable AI assistants to build native Akeyless integrations
+- **Application Development**: Get working code examples for production applications
+- **Learning & Training**: Understand Akeyless APIs without external documentation
+- **Workflow Implementation**: Implement complete patterns like S3 + secret management
+
+#### **Example Workflows**
+
+**Core Akeyless Integration Workflow:**
+The tool provides a **generic workflow** that demonstrates the fundamental patterns:
+1. **Authentication** with Akeyless to get access token
+2. **Secret Management** - Create and retrieve secrets
+3. **Application Configuration** - Use secrets for runtime configuration
+4. **Error Handling** - Proper exception management and retry logic
+5. **Best Practices** - Security and production deployment guidance
+
+**S3 Bucket Listing with Akeyless Integration:**
+The tool provides a complete workflow demonstrating:
+1. **Authentication** with Akeyless to get access token
+2. **Secret Retrieval** using the token to fetch AWS credentials
+3. **AWS SDK Integration** using retrieved credentials to list S3 objects
+4. **Error Handling** with retry logic and proper exception management
+5. **Best Practices** for production deployments
+
+#### **Benefits**
+- **For Development Teams**: Faster development, reduced errors, security best practices
+- **For AI Assistants**: Complete context, code generation, workflow understanding
+- **For Production**: Native integrations that don't depend on MCP servers

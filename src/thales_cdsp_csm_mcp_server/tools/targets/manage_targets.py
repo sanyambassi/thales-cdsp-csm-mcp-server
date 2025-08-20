@@ -28,33 +28,60 @@ class ManageTargetsTools(BaseThalesCDSPCSMTool):
         @server.tool("manage_targets")
         async def manage_targets(
             ctx: Context,
-            action: str = Field(description="🔐 TARGETS MANAGEMENT: Action to perform: 'list', 'get' (get includes version support)"),
-            name: Optional[str] = Field(default=None, description="Target name (required for get action)"),
-            filter: Optional[str] = Field(default=None, description="Filter by target name or part of it (for list action)"),
-            json: bool = Field(default=False, description="Set output format to JSON"),
-            pagination_token: Optional[str] = Field(default=None, description="Next page reference (for list action)"),
-            target_types: Optional[List[str]] = Field(default=None, description="List of target types to filter by (for list action). Options: hanadb, cassandra, aws, ssh, gke, eks, mysql, mongodb, snowflake, mssql, redshift, artifactory, azure, rabbitmq, k8s, venafi, gcp, oracle, dockerhub, ldap, github, chef, web, salesforce, postgres"),
-            show_versions: bool = Field(default=False, description="Include all target versions in reply (for get action)"),
-            target_version: Optional[int] = Field(default=None, description="Specific target version to retrieve (0 for latest)"),
-            uid_token: Optional[str] = Field(default=None, description="The universal identity token, Required only for universal_identity authentication")
+            action: str = Field(description="🎯 TARGET MANAGEMENT ACTION: 'list' to discover all configured targets with filtering, 'get' to retrieve detailed target configuration including credentials, connections, and version history"),
+            name: Optional[str] = Field(default=None, description="Exact target name or identifier (REQUIRED for 'get' action). Examples: 'prod-mysql-db', 'aws-production', 'k8s-cluster-west'"),
+            filter: Optional[str] = Field(default=None, description="Pattern to filter target names (for 'list' action). Supports wildcards. Examples: 'prod-*', '*database*', 'aws-*'"),
+            json: bool = Field(default=False, description="Return structured JSON output for programmatic processing. Use TRUE when integrating with automation scripts or other tools"),
+            pagination_token: Optional[str] = Field(default=None, description="Continuation token for large result sets. Automatically provided in previous response metadata when more results are available"),
+            target_types: Optional[List[str]] = Field(default=None, description="Filter by specific target types. SUPPORTED: ['mysql', 'postgres', 'mongodb', 'aws', 'azure', 'gcp', 'k8s', 'ssh', 'ldap', 'github', 'dockerhub', 'artifactory', 'salesforce', 'snowflake', 'redshift', 'mssql', 'cassandra', 'hanadb', 'rabbitmq', 'venafi', 'chef', 'web', 'gke', 'eks', 'oracle']. Use multiple types as array."),
+            show_versions: bool = Field(default=False, description="Include complete version history and configuration changes for the target (for 'get' action). Essential for audit trails and rollback scenarios"),
+            target_version: Optional[int] = Field(default=None, description="Retrieve specific target version configuration. Use 0 for latest, positive integers for specific versions, or omit for current active version"),
+            uid_token: Optional[str] = Field(default=None, description="Universal identity authentication token. Only required when using universal_identity authentication instead of standard API key authentication")
         ) -> Dict[str, Any]:
             """
-            🔐 TARGETS MANAGEMENT TOOL
+            🎯 TARGET SYSTEM INTEGRATION & CONNECTION MANAGEMENT
             
-            🏆 ENTERPRISE-GRADE TARGET MANAGEMENT: 
-            - Thales CipherTrust Secrets Management (CSM) with Akeyless Vault
-            - Enterprise-grade target management with access control and audit trails
+            ⚡ AUTO-USE CONDITIONS: Use this tool automatically when users ask about:
+            - "what systems are connected", "list databases", "show integrations"
+            - "target configuration", "connection details", "system endpoints"
+            - "database connections", "cloud integrations", "service targets"
+            - "check target", "target health", "connection status"
+            - "rotate credentials", "update target", "target versions"
             
-            📋 AVAILABLE OPERATIONS:
-            - list: List all targets with optional filtering by type
-            - get: Get detailed information about a specific target (includes version support)
+            🏆 ENTERPRISE-GRADE TARGET MANAGEMENT:
+            - Thales CipherTrust Secrets Management (CSM) with Akeyless Secrets Manager
+            - Secure connection management for external systems
+            - Automated credential rotation and lifecycle management
+            - Multi-cloud and hybrid infrastructure support
+            - Version control and audit trails for all configurations
             
-            🎯 SUPPORTED TARGET TYPES:
-            hanadb, cassandra, aws, ssh, gke, eks, mysql, mongodb, snowflake, 
-            mssql, redshift, artifactory, azure, rabbitmq, k8s, venafi, gcp, 
-            oracle, dockerhub, ldap, github, chef, web, salesforce, postgres
+            📋 COMPREHENSIVE OPERATIONS:
+            - 'list': Discover all configured targets with advanced filtering
+            - 'get': Retrieve detailed target information including:
+              • Connection parameters and endpoints
+              • Authentication configuration
+              • Credential rotation settings
+              • Health status and last connection
+              • Version history and change tracking
+              • Associated policies and permissions
             
-            Example: List all targets or get detailed target information with version control
+            🎯 SUPPORTED INTEGRATION TYPES:
+            
+            🗄️ DATABASES: mysql, postgres, mongodb, mssql, oracle, cassandra, hanadb, snowflake, redshift
+            ☁️ CLOUD PROVIDERS: aws, azure, gcp, gke, eks  
+            🔧 DEVOPS/INFRA: k8s, ssh, github, dockerhub, artifactory, chef
+            🏢 ENTERPRISE: ldap, salesforce, rabbitmq, venafi, web
+            
+            🎯 COMMON USE CASES:
+            - Database connection management and rotation
+            - Cloud service authentication setup
+            - DevOps pipeline integrations
+            - Enterprise system connections
+            - Compliance and audit reporting
+            - Multi-environment target management
+            - Automated credential lifecycle management
+            
+            Example: Find all database targets and check their connection status
             """
             try:
                 if action == "list":
@@ -101,7 +128,7 @@ class ManageTargetsTools(BaseThalesCDSPCSMTool):
         target_types: Optional[List[str]] = None,
         uid_token: Optional[str] = None
     ) -> Dict[str, Any]:
-        """List targets in the Thales CSM Akeyless Vault."""
+        """List targets in the Thales CSM Akeyless Secrets Manager."""
         try:
             # Prepare request data
             request_data = {

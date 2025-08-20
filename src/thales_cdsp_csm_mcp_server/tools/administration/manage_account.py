@@ -28,30 +28,67 @@ class ManageAccountTools(BaseThalesCDSPCSMTool):
         @server.tool("manage_account")
         async def manage_account(
             ctx: Context,
-            action: str = Field(description="⚙️ ACCOUNT MANAGEMENT: Action to perform: 'get'"),
-            json: bool = Field(default=False, description="Set output format to JSON"),
-            uid_token: Optional[str] = Field(default=None, description="The universal identity token, Required only for universal_identity authentication")
+            action: str = Field(description="⚙️ ACCOUNT ADMINISTRATION ACTION: Currently supports 'get' to retrieve complete account configuration, licensing details, organizational settings, and system-wide policies"),
+            json: bool = Field(default=False, description="Return structured JSON format for administrative reporting and configuration management. Use TRUE for automated compliance reporting and system integration"),
+            uid_token: Optional[str] = Field(default=None, description="Universal identity authentication token. Only required when using universal_identity authentication instead of standard API key authentication")
         ) -> Dict[str, Any]:
             """
-            ⚙️ ACCOUNT MANAGEMENT TOOL
+            ⚙️ ENTERPRISE ACCOUNT ADMINISTRATION & GOVERNANCE
             
-            🏆 ENTERPRISE-GRADE ACCOUNT ADMINISTRATION: 
-            - Thales CipherTrust Secrets Management (CSM) with Akeyless Vault
-            - Account settings and licensing information
-            - SLA and tier level details
+            ⚡ AUTO-USE CONDITIONS: Use this tool automatically when users ask about:
+            - "account settings", "licensing information", "subscription details"
+            - "organization config", "company settings", "account limits"
+            - "SLA details", "service tier", "billing information"
+            - "system policies", "governance settings", "compliance config"
+            - "version control", "sharing policies", "access configuration"
             
-            📋 AVAILABLE OPERATIONS:
-            - get: Get account settings and licensing information
+            🏆 ENTERPRISE-GRADE ACCOUNT GOVERNANCE:
+            - Thales CipherTrust Secrets Management (CSM) with Akeyless Secrets Manager
+            - Complete organizational configuration and policy management
+            - Licensing and subscription tier administration
+            - Compliance and governance framework oversight
+            - Multi-tenant and enterprise-wide settings control
             
-            📊 ACCOUNT INFORMATION INCLUDES:
-            - Company details and contact information
-            - Licensing tier and SLA levels
-            - Product-specific settings and limits
-            - Version control policies
-            - System access configuration
-            - Security and sharing policies
+            📋 COMPREHENSIVE ACCOUNT INFORMATION:
             
-            Example: Get account settings and licensing details
+            🏢 ORGANIZATIONAL DETAILS:
+            - Company profile and contact information
+            - Administrative contact details
+            - Organizational hierarchy and structure
+            - Multi-tenant configuration settings
+            - Business unit and department mappings
+            
+            📜 LICENSING & SUBSCRIPTION:
+            - Service tier and SLA level details
+            - Feature availability and limitations
+            - Usage quotas and capacity limits
+            - Billing and subscription information
+            - License expiry and renewal tracking
+            
+            🔧 SYSTEM CONFIGURATION:
+            - Product-specific settings and feature flags
+            - Version control and retention policies
+            - Security and sharing policy frameworks
+            - Access control and authentication settings
+            - Integration and API access permissions
+            
+            📊 GOVERNANCE & COMPLIANCE:
+            - Audit trail configuration and retention
+            - Compliance framework settings
+            - Data residency and privacy controls
+            - Encryption and security policy enforcement
+            - Risk management and monitoring settings
+            
+            🎯 COMMON USE CASES:
+            - Account setup and initial configuration
+            - Compliance and audit preparation
+            - License management and planning
+            - Security policy review and updates
+            - Organizational change management
+            - Service tier evaluation and upgrades
+            - Multi-tenant administration
+            
+            Example: Review account licensing and compliance configuration
             """
             try:
                 if action == "get":

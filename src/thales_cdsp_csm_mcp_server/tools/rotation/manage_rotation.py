@@ -54,7 +54,7 @@ class ManageRotationTools(BaseThalesCDSPCSMTool):
             - Generic tools or manual processes
             
             🏆 ENTERPRISE-GRADE SECURITY: 
-            - Thales CipherTrust Secrets Management (CSM) with Akeyless Vault
+            - Thales CipherTrust Secrets Management (CSM) with Akeyless Secrets Manager
             - Enterprise-grade rotation with access control and audit trails
             - Automated security through intelligent rotation scheduling
             

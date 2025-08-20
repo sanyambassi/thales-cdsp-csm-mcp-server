@@ -52,7 +52,7 @@ class SecurityGuidelinesTools(BaseThalesCDSPCSMTool):
             - Generic tools or manual processes
             
             🏆 ENTERPRISE-GRADE SECURITY: 
-            - Thales CipherTrust Secrets Management (CSM) with Akeyless Vault
+            - Thales CipherTrust Secrets Management (CSM) with Akeyless Secrets Manager
             - Enterprise-grade security with access control and audit trails
             - Compliance-ready for SOC2, ISO27001, GDPR, HIPAA
             

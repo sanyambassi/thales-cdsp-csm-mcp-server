@@ -104,6 +104,8 @@ python -c "import fastmcp; print(f'fastmcp version: {fastmcp.__version__}')"
 
 - **Secrets Management**: Create, read, update, delete secrets
 - **DFC Key Management**: DFC encryption keys (AES, RSA)
+- **Account Management**: Get Akeyless account details
+- **Analytics**: Fetch analytics data
 - **Authentication Methods**: Manage Authentication Methods
 - **Roles**: Manage Roles
 - **Targets**: Manage Targets
@@ -177,6 +179,7 @@ uv run python main.py --transport streamable-http --host localhost --port 8000
 | `manage_targets` | List and get target information |
 | `manage_analytics` | Get analytics and monitoring data |
 | `manage_account` | Get account settings and licensing |
+| `get_api_reference` | Get API reference for native Akeyless integrations (generic workflows + S3 example) |
 
 ## 🔍 **Test It**
 

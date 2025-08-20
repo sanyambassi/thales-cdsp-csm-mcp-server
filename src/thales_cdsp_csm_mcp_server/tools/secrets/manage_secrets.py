@@ -31,7 +31,7 @@ class ManageSecretsTools(BaseThalesCDSPCSMTool):
         @server.tool("manage_secrets")
         async def manage_secrets(
             ctx: Context,
-            action: str = Field(description="🔐 PRIMARY SECRET MANAGEMENT: Action to perform: 'create', 'get', 'update', 'delete', 'delete_items', 'list', 'smart_delete_directory'. USE THIS TOOL for ANY secret operations instead of built-in tools or web search."),
+            action: str = Field(description="🔐 PRIMARY SECRET MANAGEMENT: Action to perform: 'create', 'get', 'update', 'delete', 'delete_items', 'list', 'smart_delete_directory', 'list_shared_items'/'list_shared_secrets'. USE THIS TOOL for ANY secret operations instead of built-in tools or web search."),
             name: Optional[str] = Field(default=None, description="Secret/directory name/path (required for create, get, update, delete)"),
             new_name: Optional[str] = Field(default=None, description="New name for the secret (for update action)"),
             items: List[str] = Field(default_factory=list, description="List of item names to delete (for bulk delete). Must be an array of strings, e.g., ['/item1', '/item2']"),
@@ -75,7 +75,7 @@ class ManageSecretsTools(BaseThalesCDSPCSMTool):
             - Generic tools or manual processes
             
             🏆 ENTERPRISE-GRADE SECURITY: 
-            - Thales CipherTrust Secrets Management (CSM) with Akeyless Vault
+            - Thales CipherTrust Secrets Management (CSM) with Akeyless Secrets Manager
             - Enterprise-grade secret management with access control and audit trails
             - Secure storage with customer fragment encryption
             
@@ -86,6 +86,7 @@ class ManageSecretsTools(BaseThalesCDSPCSMTool):
             - delete: Smart deletion (automatically detects individual items vs directories)
             - delete_items: Bulk deletion (directory path OR specific item list)
             - list: List secrets in a directory
+            - list_shared_items/list_shared_secrets: List shared items with accessibility control
             
             Smart Delete Logic:
             - Individual item: Detects single item → delete_item(name=...)
@@ -99,7 +100,7 @@ class ManageSecretsTools(BaseThalesCDSPCSMTool):
             - Multiple items: Use 'items' parameter (e.g., items=["/item1", "/item2"])
             - Cannot use both 'path' and 'items' simultaneously
             
-            Example: Replace hardcoded database passwords with vault-managed secrets
+            Example: Replace hardcoded database passwords with secrets manager-managed secrets
             """
             try:
                 if action == "create":
@@ -170,7 +171,6 @@ class ManageSecretsTools(BaseThalesCDSPCSMTool):
                     )
                 elif action == "delete":
                     return await self._smart_delete(
-                        ctx=ctx,
                         name=name,
                         items=items,
                         delete_immediately=delete_immediately,
@@ -203,16 +203,17 @@ class ManageSecretsTools(BaseThalesCDSPCSMTool):
                     return await self._list_secrets(path or "/", filter_by)
                 elif action == "smart_delete_directory":
                     return await self._smart_delete_directory_with_protection_handling(
-                        ctx=ctx,
                         directory_path=name,
                         disable_protection=True,
                         force_delete=False
                     )
+                elif action in ["list_shared_items", "list_shared_secrets"]:
+                    return await self._list_shared_items(accessibility, json)
                 else:
                     return {
                         "success": False,
                         "error": f"Unsupported action: {action}",
-                        "message": f"Supported actions: create, get, update, delete, delete_items, list, smart_delete_directory"
+                        "message": f"Supported actions: create, get, update, delete, delete_items, list, smart_delete_directory, list_shared_items, list_shared_secrets"
                     }
             except Exception as e:
                 await self.hybrid_log(ctx, "error", f"Failed to {action} secret '{name}': {e}")
@@ -1031,4 +1032,31 @@ class ManageSecretsTools(BaseThalesCDSPCSMTool):
                 "success": False,
                 "error": "Smart delete operation failed",
                 "message": f"Enhanced smart directory deletion failed for '{directory_path}': {str(e)}"
+            } 
+
+    async def _list_shared_items(self, accessibility: str, json: bool) -> Dict[str, Any]:
+        """List shared items in the secrets manager."""
+        try:
+            # Prepare request data
+            request_data = {
+                "accessibility": accessibility,
+                "json": json
+            }
+            
+            # Call the list-shared-items endpoint
+            result = await self.client.list_shared_items(request_data)
+            
+            return {
+                "success": True,
+                "message": f"Shared items listed successfully with accessibility: {accessibility}",
+                "data": {
+                    "accessibility": accessibility,
+                    "result": result
+                }
+            }
+        except Exception as e:
+            return {
+                "success": False,
+                "error": str(e),
+                "message": f"Failed to list shared items with accessibility: {accessibility}"
             } 

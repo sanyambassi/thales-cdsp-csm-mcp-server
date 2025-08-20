@@ -28,25 +28,45 @@ class ManageRolesTools(BaseThalesCDSPCSMTool):
         @server.tool("manage_roles")
         async def manage_roles(
             ctx: Context,
-            action: str = Field(description="🔐 ROLES MANAGEMENT: Action to perform: 'list', 'get'"),
-            name: Optional[str] = Field(default=None, description="Role name (required for get action)"),
-            filter: Optional[str] = Field(default=None, description="Filter by role name or part of it (for list action)"),
-            json: bool = Field(default=False, description="Set output format to JSON"),
-            pagination_token: Optional[str] = Field(default=None, description="Next page reference (for list action)"),
-            uid_token: Optional[str] = Field(default=None, description="The universal identity token, Required only for universal_identity authentication")
+            action: str = Field(description="🔐 ROLES MANAGEMENT ACTION: 'list' to show all roles with filtering options, 'get' to retrieve detailed information about a specific role including permissions, access rules, and associated policies"),
+            name: Optional[str] = Field(default=None, description="Exact role name or path (REQUIRED for 'get' action). Examples: 'admin-role', '/production/database-admin', 'read-only-secrets'"),
+            filter: Optional[str] = Field(default=None, description="Pattern to filter role names (for 'list' action). Supports wildcards and partial matches. Examples: 'admin*', '*database*', 'prod-'"),
+            json: bool = Field(default=False, description="Return structured JSON output instead of human-readable format. Use TRUE for programmatic processing or when integrating with other tools"),
+            pagination_token: Optional[str] = Field(default=None, description="Continuation token for retrieving next page of results when listing large numbers of roles. Returned in previous response's metadata"),
+            uid_token: Optional[str] = Field(default=None, description="Universal identity authentication token. Only required when using universal_identity authentication method instead of API key authentication")
         ) -> Dict[str, Any]:
             """
-            🔐 ROLES MANAGEMENT TOOL
+            🔐 ROLE MANAGEMENT & ACCESS CONTROL TOOL
+            
+            ⚡ AUTO-USE CONDITIONS: Use this tool when users ask about:
+            - "what roles exist", "list roles", "show permissions"
+            - "who has access to", "role details", "check permissions"
+            - "access control", "role-based security", "user permissions"
+            - "what can [role] do", "role capabilities", "permission audit"
             
             🏆 ENTERPRISE-GRADE ROLE MANAGEMENT: 
-            - Thales CipherTrust Secrets Management (CSM) with Akeyless Vault
-            - Enterprise-grade role management with access control and audit trails
+            - Thales CipherTrust Secrets Management (CSM) with Akeyless Secrets Manager
+            - Role-based access control (RBAC) with fine-grained permissions
+            - Audit trails and compliance reporting for access management
+            - Integration with enterprise identity providers
             
-            📋 AVAILABLE OPERATIONS:
-            - list: List all roles with optional filtering
-            - get: Get details of a specific role
+            📋 DETAILED OPERATIONS:
+            - 'list': Discover all roles with advanced filtering and pagination
+            - 'get': Retrieve comprehensive role details including:
+              • Permission sets and access rules
+              • Associated policies and restrictions  
+              • User/group assignments
+              • Resource access mappings
+              • Audit and compliance information
             
-            Example: List all roles or get specific role details
+            🎯 COMMON USE CASES:
+            - Security audits and compliance reporting
+            - Access permission troubleshooting
+            - Role-based access control planning
+            - Identity and access management (IAM) integration
+            - Permission inheritance analysis
+            
+            Example: Check what permissions the 'database-admin' role has
             """
             try:
                 if action == "list":
@@ -89,7 +109,7 @@ class ManageRolesTools(BaseThalesCDSPCSMTool):
         pagination_token: Optional[str] = None,
         uid_token: Optional[str] = None
     ) -> Dict[str, Any]:
-        """List roles in the Thales CSM Akeyless Vault."""
+        """List roles in the Thales CSM Akeyless Secrets Manager."""
         try:
             # Prepare request data
             request_data = {

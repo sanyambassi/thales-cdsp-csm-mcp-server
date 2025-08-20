@@ -896,3 +896,27 @@ class ThalesCDSPCSMClient:
         result = await self._make_request("gateway-update-item", data)
         logger.info(f"Item '{name}' updated successfully using gateway-update-item")
         return result 
+
+    async def rotate_key(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Rotate a DFC key on demand with new certificate and key data."""
+        logger.info(f"Rotating DFC key: {data.get('name', 'unknown')}")
+        
+        result = await self._make_request("rotate-key", data)
+        logger.info(f"DFC key '{data.get('name', 'unknown')}' rotated successfully")
+        return result
+
+    async def list_gateways(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """List available Akeyless gateways."""
+        logger.info("Listing available gateways")
+        
+        result = await self._make_request("list-gateways", data)
+        logger.info("Gateways listed successfully")
+        return result
+
+    async def list_shared_items(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """List shared items in the secrets manager."""
+        logger.info(f"Listing shared items with accessibility: {data.get('accessibility', 'regular')}")
+        
+        result = await self._make_request("list-shared-items", data)
+        logger.info("Shared items listed successfully")
+        return result 

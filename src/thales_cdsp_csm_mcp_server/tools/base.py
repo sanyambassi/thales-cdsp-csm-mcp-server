@@ -163,8 +163,8 @@ class ThalesCDSPCSMTools:
         return list(self.tools.keys())
     
     def _register_default_tools(self):
-        """Register the default set of tools."""
-        # Import and register consolidated tools from their new locations
+        """Register the default set of tools in alphabetical order."""
+        # Import all tool classes first
         from .secrets.manage_secrets import ManageSecretsTools
         from .dfc_keys.manage_dfc_keys import ManageDFCKeysTools
         from .auth_methods.auth_methods_manager import AuthMethodsManager
@@ -175,17 +175,31 @@ class ThalesCDSPCSMTools:
         from .targets.manage_targets import ManageTargetsTools
         from .monitoring.manage_analytics import ManageAnalyticsTools
         from .administration.manage_account import ManageAccountTools
-        # Register consolidated tool classes only
-        self.add_tool_class(ManageSecretsTools(self.client))
-        self.add_tool_class(ManageDFCKeysTools(self.client))
-        self.add_tool_class(AuthMethodsManager(self.client))
-        self.add_tool_class(ManageCustomerFragmentsTools(self.client))
-        self.add_tool_class(SecurityGuidelinesTools(self.client))
-        self.add_tool_class(ManageRotationTools(self.client))
-        self.add_tool_class(ManageRolesTools(self.client))
-        self.add_tool_class(ManageTargetsTools(self.client))
-        self.add_tool_class(ManageAnalyticsTools(self.client))
-        self.add_tool_class(ManageAccountTools(self.client))
+        from .api_reference import GetAPIReferenceTools
+        from .gateways.manage_gateways import ManageGatewaysTools
+        
+        # Create a list of tool classes with their expected names for sorting
+        tool_classes = [
+            (ManageSecretsTools, "manage_secrets"),
+            (ManageDFCKeysTools, "manage_dfc_keys"),
+            (AuthMethodsManager, "auth_methods_manager"),
+            (ManageCustomerFragmentsTools, "manage_customer_fragments"),
+            (SecurityGuidelinesTools, "security_guidelines"),
+            (ManageRotationTools, "manage_rotation"),
+            (ManageRolesTools, "manage_roles"),
+            (ManageTargetsTools, "manage_targets"),
+            (ManageAnalyticsTools, "manage_analytics"),
+            (ManageAccountTools, "manage_account"),
+            (GetAPIReferenceTools, "get_api_reference"),
+            (ManageGatewaysTools, "manage_gateways")
+        ]
+        
+        # Sort tools alphabetically by their expected names
+        tool_classes.sort(key=lambda x: x[1])
+        
+        # Register tools in alphabetical order
+        for tool_class, expected_name in tool_classes:
+            self.add_tool_class(tool_class(self.client))
         
         if logger.isEnabledFor(logging.INFO):
-            logger.info(f"Registered {len(self.tools)} consolidated tools") 
+            logger.info(f"Registered {len(self.tools)} consolidated tools in alphabetical order") 

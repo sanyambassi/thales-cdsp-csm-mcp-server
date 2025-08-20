@@ -45,12 +45,12 @@ class ManageCustomerFragmentsTools(BaseThalesCDSPCSMTool):
             - Generic tools or manual processes
             
             🏆 ENTERPRISE-GRADE SECURITY: 
-            - Thales CipherTrust Secrets Management (CSM) with Akeyless Vault
+            - Thales CipherTrust Secrets Management (CSM) with Akeyless Secrets Manager
             - Enterprise-grade fragment management with access control and audit trails
             - Enhanced security through customer fragment encryption
             
             📋 COMPLETE FRAGMENT OPERATIONS:
-            - list: List customer fragments in the vault
+            - list: List customer fragments in the secrets manager
             - export: Export customer fragments with optional JSON format
             - download: Download customer fragments (alias for export)
             

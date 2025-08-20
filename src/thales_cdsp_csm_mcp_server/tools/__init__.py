@@ -13,6 +13,11 @@ from .auth_methods.auth_methods_manager import AuthMethodsManager
 from .customer_fragments.manage_customer_fragments import ManageCustomerFragmentsTools
 from .guidelines.security_guidelines import SecurityGuidelinesTools
 from .rotation.manage_rotation import ManageRotationTools
+from .roles.manage_roles import ManageRolesTools
+from .targets.manage_targets import ManageTargetsTools
+from .monitoring.manage_analytics import ManageAnalyticsTools
+from .administration.manage_account import ManageAccountTools
+from .api_reference import GetAPIReferenceTools
 
 
 __all__ = [
@@ -27,5 +32,10 @@ __all__ = [
     "ManageCustomerFragmentsTools",
     "SecurityGuidelinesTools",
     "ManageRotationTools",
+    "ManageRolesTools",
+    "ManageTargetsTools",
+    "ManageAnalyticsTools",
+    "ManageAccountTools",
+    "GetAPIReferenceTools",
 
 ] 

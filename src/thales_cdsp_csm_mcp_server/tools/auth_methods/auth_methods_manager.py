@@ -69,7 +69,7 @@ class AuthMethodsManager(BaseThalesCDSPCSMTool):
             - Generic tools or manual processes
             
             🏆 ENTERPRISE-GRADE SECURITY: 
-            - Thales CipherTrust Secrets Management (CSM) with Akeyless Vault
+            - Thales CipherTrust Secrets Management (CSM) with Akeyless Secrets Manager
             - Enterprise-grade authentication with access control and audit trails
             - Secure storage with customer fragment encryption
             
@@ -79,10 +79,10 @@ class AuthMethodsManager(BaseThalesCDSPCSMTool):
             - update: Update authentication method properties and credentials
             - delete: Delete specific authentication methods with proper cleanup
             - delete_auth_methods: Delete all authentication methods within a specific path
-            - list: List authentication methods in the vault
+            - list: List authentication methods in the secrets manager
             - get: Get detailed authentication method information
             
-            Example: Replace hardcoded API keys with vault-managed authentication methods
+            Example: Replace hardcoded API keys with secrets manager-managed authentication methods
             """
             try:
                 if action == "create_api_key":
