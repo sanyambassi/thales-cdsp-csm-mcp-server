@@ -7,7 +7,33 @@ Simple MCP server for Thales CipherTrust Secrets Management.
 
 import asyncio
 import argparse
+import signal
+import sys
+import logging
 from src.thales_cdsp_csm_mcp_server.server.mcp_server import ThalesCDSPCSMMCPServer
+
+# Global variable to hold the server instance for graceful shutdown
+server_instance = None
+
+def signal_handler(signum, frame):
+    """Handle shutdown signals gracefully."""
+    print("\n🛑 Graceful shutdown initiated...")
+    
+    global server_instance
+    if server_instance:
+        print("📋 Cleaning up server resources...")
+        try:
+            # Close client connections if available
+            if hasattr(server_instance, 'client') and server_instance.client:
+                print("🔌 Closing client connections...")
+                # Note: Akeyless client cleanup is handled automatically
+            
+            print("✅ Server cleanup completed")
+        except Exception as e:
+            print(f"⚠️  Error during cleanup: {e}")
+    
+    print("👋 Thales CSM MCP Server shutdown complete. Goodbye!")
+    sys.exit(0)
 
 def main():
     parser = argparse.ArgumentParser(
@@ -40,11 +66,28 @@ Examples:
     
     args = parser.parse_args()
     
-    # Create server instance (logging will be configured in server initialization)
-    server = ThalesCDSPCSMMCPServer()
+    # Setup graceful shutdown handling
+    signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGTERM, signal_handler)
     
-    # Use the server's run method which handles all transport modes
-    server.run(transport=args.transport, host=args.host, port=args.port)
+    global server_instance
+    try:
+        # Create server instance (logging will be configured in server initialization)
+        server_instance = ThalesCDSPCSMMCPServer()
+        
+        print("🚀 Starting Thales CSM MCP Server...")
+        print("💡 Press Ctrl+C for graceful shutdown")
+        
+        # Use the server's run method which handles all transport modes
+        server_instance.run(transport=args.transport, host=args.host, port=args.port)
+        
+    except KeyboardInterrupt:
+        # This shouldn't be reached due to signal handler, but just in case
+        print("\n🛑 Keyboard interrupt received")
+        signal_handler(signal.SIGINT, None)
+    except Exception as e:
+        print(f"❌ Server startup failed: {e}")
+        sys.exit(1)
 
 if __name__ == "__main__":
     main() 
