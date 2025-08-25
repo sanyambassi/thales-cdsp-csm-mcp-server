@@ -29,7 +29,11 @@ MCP_PROTOCOL_VERSION = MCP_PROTOCOL_VERSION_LATEST  # Default to latest
 class ThalesCDSPCSMMCPServer:
     """MCP Server for Thales CDSP CSM (CipherTrust Secrets Management) Secrets Management."""
     
-    def __init__(self):
+    def __init__(self, log_level: str = None):
+        # Override log level if provided via CLI, otherwise use environment variable
+        if log_level:
+            os.environ["LOG_LEVEL"] = log_level.upper()
+        
         self.config = ThalesCDSPCSMConfig()
         self.client = ThalesCDSPCSMClient(self.config)
         # Generate dynamic instructions based on actual registered tools

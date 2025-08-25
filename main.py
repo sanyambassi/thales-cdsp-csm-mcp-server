@@ -41,8 +41,10 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  python main.py                                    # Start with stdio transport
+  python main.py                                          # Start with stdio transport
   python main.py --transport streamable-http --port 8000  # Start HTTP server
+  python main.py --log-level DEBUG                        # Start with debug logging
+  python main.py --log-level WARNING --transport stdio    # Start with warning level
         """
     )
     
@@ -63,6 +65,12 @@ Examples:
         default=8000,
         help="Port for HTTP transport (default: 8000)"
     )
+    parser.add_argument(
+        "--log-level",
+        choices=["DEBUG", "INFO", "NOTICE", "WARNING", "ERROR", "CRITICAL", "ALERT", "EMERGENCY"],
+        default=None,
+        help="Set logging level (overrides LOG_LEVEL environment variable)"
+    )
     
     args = parser.parse_args()
     
@@ -73,9 +81,12 @@ Examples:
     global server_instance
     try:
         # Create server instance (logging will be configured in server initialization)
-        server_instance = ThalesCDSPCSMMCPServer()
+        # Pass log_level if specified via CLI, otherwise let server use environment variable
+        server_instance = ThalesCDSPCSMMCPServer(log_level=args.log_level)
         
         print("Starting Thales CSM MCP Server...")
+        if args.log_level:
+            print(f"Log level set to: {args.log_level}")
         print("Press Ctrl+C for graceful shutdown")
         
         # Use the server's run method which handles all transport modes
