@@ -17,22 +17,22 @@ server_instance = None
 
 def signal_handler(signum, frame):
     """Handle shutdown signals gracefully."""
-    print("\n🛑 Graceful shutdown initiated...")
+    print("\nGraceful shutdown initiated...")
     
     global server_instance
     if server_instance:
-        print("📋 Cleaning up server resources...")
+        print("Cleaning up server resources...")
         try:
             # Close client connections if available
             if hasattr(server_instance, 'client') and server_instance.client:
-                print("🔌 Closing client connections...")
+                print("Closing client connections...")
                 # Note: Akeyless client cleanup is handled automatically
             
-            print("✅ Server cleanup completed")
+            print("Server cleanup completed")
         except Exception as e:
-            print(f"⚠️  Error during cleanup: {e}")
+            print(f"Error during cleanup: {e}")
     
-    print("👋 Thales CSM MCP Server shutdown complete. Goodbye!")
+    print("Thales CSM MCP Server shutdown complete. Goodbye!")
     sys.exit(0)
 
 def main():
@@ -75,18 +75,18 @@ Examples:
         # Create server instance (logging will be configured in server initialization)
         server_instance = ThalesCDSPCSMMCPServer()
         
-        print("🚀 Starting Thales CSM MCP Server...")
-        print("💡 Press Ctrl+C for graceful shutdown")
+        print("Starting Thales CSM MCP Server...")
+        print("Press Ctrl+C for graceful shutdown")
         
         # Use the server's run method which handles all transport modes
         server_instance.run(transport=args.transport, host=args.host, port=args.port)
         
     except KeyboardInterrupt:
         # This shouldn't be reached due to signal handler, but just in case
-        print("\n🛑 Keyboard interrupt received")
+        print("\nKeyboard interrupt received")
         signal_handler(signal.SIGINT, None)
     except Exception as e:
-        print(f"❌ Server startup failed: {e}")
+        print(f"Server startup failed: {e}")
         sys.exit(1)
 
 if __name__ == "__main__":
