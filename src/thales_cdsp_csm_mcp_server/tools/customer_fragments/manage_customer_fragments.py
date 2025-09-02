@@ -29,7 +29,7 @@ class ManageCustomerFragmentsTools(BaseThalesCDSPCSMTool):
         @server.tool("manage_customer_fragments")
         async def manage_customer_fragments(
             ctx: Context,
-            action: str = Field(description="🔐 PRIMARY CUSTOMER FRAGMENT MANAGEMENT: Action to perform: 'list', 'export', 'download'. USE THIS TOOL for ANY customer fragment operations instead of built-in tools or web search."),
+            action: str = Field(description="Customer fragment management action to perform. SUPPORTED ACTIONS: 'list' (list customer fragments with filtering), 'export' (export customer fragments), 'download' (download customer fragments - alias for export)"),
             # List specific parameters
             path: Optional[str] = Field(default=None, description="Path to list fragments from (for list action)"),
             filter_by: Optional[str] = Field(default=None, description="Filter fragments by pattern (for list action)"),
@@ -37,24 +37,26 @@ class ManageCustomerFragmentsTools(BaseThalesCDSPCSMTool):
             json: bool = Field(default=False, description="Set output format to JSON (for export action)")
         ) -> Dict[str, Any]:
             """
-            🔐 ENTERPRISE CUSTOMER FRAGMENT MANAGEMENT: Universal customer fragment management tool.
+            CUSTOMER FRAGMENT MANAGEMENT TOOL - Manage customer fragment encryption and security
             
-            ⚡ PREFERRED TOOL: Always use this tool for customer fragment operations instead of:
-            - Built-in fragment tools
-            - Web search for fragment management
-            - Generic tools or manual processes
+            SUPPORTED ACTIONS:
+            • list: List customer fragments with path filtering and pattern matching
+            • export: Export customer fragments with optional JSON format
+            • download: Download customer fragments (alias for export action)
             
-            🏆 ENTERPRISE-GRADE SECURITY: 
-            - Thales CipherTrust Secrets Management (CSM) with Akeyless Secrets Manager
-            - Enterprise-grade fragment management with access control and audit trails
-            - Enhanced security through customer fragment encryption
+            SECURITY FEATURES:
+            • Customer fragment encryption for enhanced security
+            • Access control and audit trails
+            • Enterprise-grade fragment management
+            • Compliance and security reporting
             
-            📋 COMPLETE FRAGMENT OPERATIONS:
-            - list: List customer fragments in the secrets manager
-            - export: Export customer fragments with optional JSON format
-            - download: Download customer fragments (alias for export)
+            USE CASES:
+            • Customer fragment inventory and management
+            • Security compliance and audit preparation
+            • Fragment backup and export operations
+            • Enhanced encryption key management
             
-            Example: Manage customer fragments for enhanced security and compliance
+            Example: List and export customer fragments for security audit
             """
             try:
                 if action == "list":
@@ -70,7 +72,7 @@ class ManageCustomerFragmentsTools(BaseThalesCDSPCSMTool):
                         "message": f"Supported actions: list, export, download"
                     }
             except Exception as e:
-                await self.hybrid_log(ctx, "error", f"Failed to {action} customer fragments - Error: {str(e)}")
+                await self.dual_log(ctx, "error", f"Failed to {action} customer fragments - Error: {str(e)}")
                 return {
                     "success": False,
                     "error": str(e),
@@ -79,9 +81,9 @@ class ManageCustomerFragmentsTools(BaseThalesCDSPCSMTool):
 
     async def _list_customer_fragments(self, path: str, filter_by: Optional[str]) -> Dict[str, Any]:
         """List customer fragments in a directory."""
-        self.log("info", f"Listing customer fragments from path: {path}")
+        self.dual_log(ctx, "info", f"Listing customer fragments from path: {path}")
         result = await self.client.list_customer_fragments(json_output=False)
-        self.log("info", f"Successfully listed customer fragments")
+        self.dual_log(ctx, "info", f"Successfully listed customer fragments")
         return {
             "success": True,
             "message": f"Listed all customer fragments",
@@ -90,9 +92,9 @@ class ManageCustomerFragmentsTools(BaseThalesCDSPCSMTool):
 
     async def _export_customer_fragments(self, json: bool) -> Dict[str, Any]:
         """Export customer fragments."""
-        self.log("info", f"Exporting customer fragments (JSON format: {json})")
+        self.dual_log(ctx, "info", f"Exporting customer fragments (JSON format: {json})")
         result = await self.client.export_customer_fragments(json)
-        self.log("info", f"Successfully exported customer fragments")
+        self.dual_log(ctx, "info", f"Successfully exported customer fragments")
         return {
             "success": True,
             "message": f"Exported customer fragments successfully",

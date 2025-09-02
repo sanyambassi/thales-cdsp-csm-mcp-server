@@ -28,7 +28,7 @@ class ManageAnalyticsTools(BaseThalesCDSPCSMTool):
         @server.tool("manage_analytics")
         async def manage_analytics(
             ctx: Context,
-            action: str = Field(description="📊 ANALYTICS ACTION: Currently supports 'get' to retrieve comprehensive monitoring data, usage statistics, and performance metrics for the entire Akeyless infrastructure"),
+            action: str = Field(description="Analytics and monitoring action to perform. SUPPORTED ACTIONS: 'get' (retrieve comprehensive monitoring data, usage statistics, and performance metrics for the entire infrastructure)"),
             json: bool = Field(default=False, description="Return structured JSON format for programmatic analysis and dashboard integration. Use TRUE for automated reporting and data processing"),
             filter_by_type: Optional[str] = Field(default=None, description="Focus on specific item categories. SUPPORTED TYPES: 'Targets', 'Static Secrets', 'Dynamic Secrets', 'DFC Key', 'Roles', 'Auth Methods', 'Rotated Secrets', 'Certificates'. Use exact match for filtering"),
             filter_by_risk: Optional[str] = Field(default=None, description="Filter certificate and security risk analysis. OPTIONS: 'Expired' (certificates past expiry), 'Healthy' (certificates within validity), 'Expiring Soon' (certificates near expiry)"),
@@ -36,58 +36,37 @@ class ManageAnalyticsTools(BaseThalesCDSPCSMTool):
             uid_token: Optional[str] = Field(default=None, description="Universal identity authentication token. Only required when using universal_identity authentication instead of standard API key authentication")
         ) -> Dict[str, Any]:
             """
-            📊 COMPREHENSIVE MONITORING & ANALYTICS DASHBOARD
+            ANALYTICS & MONITORING TOOL - Comprehensive infrastructure monitoring and reporting
             
-            ⚡ AUTO-USE CONDITIONS: Use this tool automatically when users ask about:
-            - "usage statistics", "system metrics", "performance data"
-            - "how many secrets", "certificate status", "risk assessment"
-            - "monitoring dashboard", "analytics report", "usage trends"
-            - "system health", "audit summary", "compliance metrics"
-            - "geographic usage", "client statistics", "access patterns"
+            SUPPORTED ACTIONS:
+            • get: Retrieve comprehensive monitoring data, usage statistics, and performance metrics
             
-            🏆 ENTERPRISE-GRADE MONITORING CAPABILITIES:
-            - Thales CipherTrust Secrets Management (CSM) with Akeyless Secrets Manager
-            - Real-time usage analytics and performance monitoring
-            - Security risk assessment and compliance reporting
-            - Geographic distribution and access pattern analysis
-            - Multi-product environment insights
+            ANALYTICS COVERAGE:
+            • Usage statistics and item counts by type (Secrets, Targets, Roles, Keys)
+            • Geographic distribution of access requests and client patterns
+            • Security risk analysis and certificate expiry tracking
+            • Authentication method usage and access control compliance
+            • Multi-region usage distribution and product-specific metrics
+            • Resource utilization, capacity planning, and audit summaries
             
-            📊 COMPREHENSIVE ANALYTICS COVERAGE:
+            FILTERING OPTIONS:
+            • Filter by item type (Targets, Static Secrets, Dynamic Secrets, DFC Keys, etc.)
+            • Filter by risk level (Expired, Healthy, Expiring Soon certificates)
+            • Filter by product component (Secrets Management, Advanced Data Protection, etc.)
             
-            📈 USAGE STATISTICS:
-            - Item counts by type (Secrets, Targets, Roles, Keys)
-            - Geographic distribution of access requests
-            - Client usage patterns and trends
-            - Request volumes and response time metrics
-            - Active user and application statistics
-            
-            🔒 SECURITY & RISK ANALYSIS:
-            - Certificate expiry tracking and risk assessment
-            - Access control compliance metrics
-            - Authentication method usage analysis
-            - Failed access attempts and security events
-            - Privilege escalation monitoring
-            
-            🌍 OPERATIONAL INSIGHTS:
-            - Multi-region usage distribution
-            - Product-specific performance metrics
-            - Integration health and connectivity status
-            - Resource utilization and capacity planning
-            - Audit trail summary and compliance reporting
-            
-            🎯 COMMON USE CASES:
-            - Security operations center (SOC) dashboards
-            - Compliance reporting and audit preparation
-            - Capacity planning and resource optimization
-            - Risk assessment and vulnerability management
-            - Executive reporting and KPI tracking
-            - Operational health monitoring and alerting
+            USE CASES:
+            • Security operations center (SOC) dashboards
+            • Compliance reporting and audit preparation
+            • Capacity planning and resource optimization
+            • Risk assessment and vulnerability management
+            • Executive reporting and KPI tracking
             
             Example: Get security risk analysis for certificate expiry management
             """
             try:
                 if action == "get":
                     return await self._get_analytics(
+                        ctx,
                         json=json,
                         filter_by_type=filter_by_type,
                         filter_by_risk=filter_by_risk,
@@ -101,7 +80,7 @@ class ManageAnalyticsTools(BaseThalesCDSPCSMTool):
                         "message": "Supported actions: 'get'"
                     }
             except Exception as e:
-                await self.hybrid_log(ctx, "error", f"Failed to manage analytics: {str(e)}")
+                await self.dual_log(ctx, "error", f"Failed to manage analytics: {str(e)}")
                 return {
                     "success": False,
                     "error": str(e),
@@ -110,6 +89,7 @@ class ManageAnalyticsTools(BaseThalesCDSPCSMTool):
 
     async def _get_analytics(
         self,
+        ctx,
         json: bool = False,
         filter_by_type: Optional[str] = None,
         filter_by_risk: Optional[str] = None,
@@ -117,6 +97,9 @@ class ManageAnalyticsTools(BaseThalesCDSPCSMTool):
         uid_token: Optional[str] = None
     ) -> Dict[str, Any]:
         """Get analytics data with optional client-side filtering."""
+        # Dual logging: Server-side + MCP protocol
+        await self.dual_log(ctx, "info", f"Starting operation: get analytics")
+        
         try:
             # Prepare request data
             request_data = {

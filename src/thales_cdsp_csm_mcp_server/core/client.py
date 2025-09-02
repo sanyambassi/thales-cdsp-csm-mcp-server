@@ -919,4 +919,90 @@ class ThalesCDSPCSMClient:
         
         result = await self._make_request("list-shared-items", data)
         logger.info("Shared items listed successfully")
+        return result
+
+    async def get_dynamic_secret(self, name: str, json: bool = False, uid_token: Optional[str] = None) -> Dict[str, Any]:
+        """Get a dynamic secret from Thales CSM Akeyless Vault."""
+        full_name = self._normalize_path(name)
+        
+        logger.info(f"Getting dynamic secret: {full_name}")
+        
+        data = {
+            "name": full_name,
+            "json": json
+        }
+        
+        if uid_token:
+            data["uid-token"] = uid_token
+        
+        result = await self._make_request("dynamic-secret-get", data)
+        logger.info(f"Dynamic secret '{name}' retrieved successfully")
+        return result
+
+    async def get_dynamic_secret_value(self, name: str, target: Optional[str] = None, host: Optional[str] = None, 
+                                     args: Optional[List[str]] = None, timeout: int = 15, json: bool = False, 
+                                     uid_token: Optional[str] = None) -> Dict[str, Any]:
+        """Get a dynamic secret value from Thales CSM Akeyless Vault."""
+        full_name = self._normalize_path(name)
+        
+        logger.info(f"Getting dynamic secret value: {full_name}")
+        
+        data = {
+            "name": full_name,
+            "timeout": timeout,
+            "json": json
+        }
+        
+        # Add optional parameters if provided
+        if target:
+            data["target"] = target
+        if host:
+            data["host"] = host
+        if args:
+            data["args"] = args
+        if uid_token:
+            data["uid-token"] = uid_token
+        
+        result = await self._make_request("dynamic-secret-get-value", data)
+        logger.info(f"Dynamic secret value for '{name}' retrieved successfully")
+        return result
+
+    async def list_dynamic_secrets(self, json: bool = False, uid_token: Optional[str] = None) -> Dict[str, Any]:
+        """List ALL dynamic secrets globally across the entire Thales CSM Akeyless Vault (recursive search)."""
+        logger.info("Listing ALL dynamic secrets globally across entire vault")
+        
+        data = {
+            "json": json
+        }
+        
+        # Add optional parameters if provided
+        if uid_token:
+            data["uid-token"] = uid_token
+        
+        result = await self._make_request("dynamic-secret-list", data)
+        logger.info("Dynamic secrets listed successfully from entire vault (global search)")
+        return result
+
+    async def create_dynamic_secret_ldap(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Create an LDAP dynamic secret in Thales CSM Akeyless Vault."""
+        logger.info(f"Creating LDAP dynamic secret: {data.get('name', 'unknown')}")
+        
+        result = await self._make_request("dynamic-secret-create-ldap", data)
+        logger.info(f"LDAP dynamic secret '{data.get('name', 'unknown')}' created successfully")
+        return result
+
+    async def create_dynamic_secret_mysql(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Create a MySQL dynamic secret in Thales CSM Akeyless Vault."""
+        logger.info(f"Creating MySQL dynamic secret: {data.get('name', 'unknown')}")
+        
+        result = await self._make_request("dynamic-secret-create-mysql", data)
+        logger.info(f"MySQL dynamic secret '{data.get('name', 'unknown')}' created successfully")
+        return result
+
+    async def create_dynamic_secret_mongodb(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Create a MongoDB dynamic secret in Thales CSM Akeyless Vault."""
+        logger.info(f"Creating MongoDB dynamic secret: {data.get('name', 'unknown')}")
+        
+        result = await self._make_request("dynamic-secret-create-mongodb", data)
+        logger.info(f"MongoDB dynamic secret '{data.get('name', 'unknown')}' created successfully")
         return result 

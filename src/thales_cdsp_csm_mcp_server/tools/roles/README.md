@@ -43,14 +43,3 @@ await manage_roles(action="get", name="admin-role")
 # Get role details with JSON output
 await manage_roles(action="get", name="admin-role", json=True)
 ```
-## Error Handling
-
-The tool provides comprehensive error handling with:
-- Input validation
-- API error handling
-- User-friendly error messages
-- Logging for debugging
-
-## Authentication
-
-Supports both standard token authentication and universal identity authentication through the `uid_token` parameter. 

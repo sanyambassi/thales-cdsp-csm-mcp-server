@@ -15,7 +15,7 @@ Comprehensive authentication methods management tool with the following actions:
 - **`list`** - List authentication methods
 - **`get`** - Get specific authentication method details
 
-## Supported Auth Method Types
+## Supported Auth Method Types for create actions
 
 - **API Key** - Token-based authentication
 - **Email** - Email-based authentication with MFA support

@@ -89,7 +89,7 @@ Examples:
             print(f"Log level set to: {args.log_level}")
         print("Press Ctrl+C for graceful shutdown")
         
-        # Use the server's run method which handles all transport modes
+        # Use the server's synchronous run method which handles all transport modes
         server_instance.run(transport=args.transport, host=args.host, port=args.port)
         
     except KeyboardInterrupt:

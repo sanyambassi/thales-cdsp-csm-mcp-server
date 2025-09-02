@@ -117,7 +117,7 @@ curl http://localhost:8000/health
 
 - **Health endpoint**: Shows server status, tools, and prompts
 - **Tools list**: Returns available tools (count varies based on configuration)
-- **Prompts list**: Returns 2 available prompts
+- **Prompts list**: Returns all available prompts
 - **Tool calls**: Return success/error responses
 
 ## ⚠️ **Important Notes**

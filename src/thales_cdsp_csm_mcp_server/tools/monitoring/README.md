@@ -12,7 +12,6 @@ This module provides tools for monitoring and analytics in the Thales CSM Akeyle
   - `filter_by_type`: Filter analytics by item type (e.g., 'Targets', 'Static Secrets', 'DFC Key')
   - `filter_by_risk`: Filter certificates by risk level ('Expired', 'Healthy')
   - `filter_by_product`: Filter by product ('sm', 'adp', 'sra')
-  - `uid_token`: Universal identity token (for universal_identity authentication)
 
 ## Analytics Data Includes
 
@@ -56,19 +55,6 @@ await manage_analytics(action="get", filter_by_risk="Healthy")
 ```python
 # Get only Secrets Management analytics
 await manage_analytics(action="get", filter_by_product="sm")
-
-# Get only ADP analytics
-await manage_analytics(action="get", filter_by_product="adp")
-```
-
-### Combine filters
-```python
-# Get target analytics with JSON output
-await manage_analytics(
-    action="get", 
-    filter_by_type="Targets", 
-    json=True
-)
 ```
 
 ## Filtering Capabilities
@@ -78,15 +64,3 @@ The tool provides client-side filtering for:
 - **Risk Levels**: Focus on certificate health status
 - **Products**: Analyze specific product usage
 - **Combined Filters**: Use multiple filters simultaneously
-
-## Error Handling
-
-The tool provides comprehensive error handling with:
-- Input validation
-- API error handling
-- User-friendly error messages
-- Logging for debugging
-
-## Authentication
-
-Supports both standard token authentication and universal identity authentication through the `uid_token` parameter. 

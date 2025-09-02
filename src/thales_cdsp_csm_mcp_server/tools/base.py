@@ -17,18 +17,27 @@ logger = logging.getLogger(__name__)
 class BaseThalesCDSPCSMTool:
     """Base class for all Thales CDSP CSM MCP tools."""
     
-    def __init__(self, client: ThalesCDSPCSMClient):
+    def __init__(self, client: ThalesCDSPCSMClient, parent_logger=None):
         self.client = client
-        self._setup_tool_logging()
+        self._setup_tool_logging(parent_logger)
     
-    def _setup_tool_logging(self):
+    def _setup_tool_logging(self, parent_logger=None):
         """Setup tool-specific logging with both Python logging and MCP protocol support."""
-        # Create tool-specific logger
-        tool_name = self.__class__.__name__.lower()
-        self.logger = logging.getLogger(f"thales_csm_mcp.tools.{tool_name}")
+        if parent_logger:
+            # Use parent logger (for modules that should share the main tool's logger)
+            self.logger = parent_logger
+        else:
+            # Create tool-specific logger (for main tools)
+            tool_name = self.__class__.__name__.lower()
+            self.logger = logging.getLogger(f"thales_csm_mcp.tools.{tool_name}")
         
-        # Setup tool-specific file logging
-        self._setup_tool_file_logging(tool_name)
+        # Set logger level to DEBUG to capture all messages
+        self.logger.setLevel(logging.DEBUG)
+        
+        # Setup tool-specific file logging only for main tools (not modules)
+        if not parent_logger:
+            tool_name = self.__class__.__name__.lower()
+            self._setup_tool_file_logging(tool_name)
     
     def _setup_tool_file_logging(self, tool_name: str):
         """Setup tool-specific file logging."""
@@ -106,24 +115,51 @@ class BaseThalesCDSPCSMTool:
         message_priority = level_priority.get(level.lower(), 1)
         return message_priority >= current_priority
     
-    async def hybrid_log(self, ctx, level: str, message: str, data: dict = None):
+    async def dual_log(self, ctx, level: str, message: str, data: dict = None):
         """
-        Hybrid logging that respects log level configuration.
-        Logs to both MCP client (if level is appropriate) AND file.
+        Dual logging: Server-side file logging + MCP protocol logging.
+        Follows the thales-dpod-mcp-server pattern.
         """
-        # Always log to file (respects logger's own level)
+        # 1️⃣ SERVER-SIDE FILE LOGGING (always write to file)
         self.log(level, message, data)
         
-        # Only log to MCP client if level is appropriate
+        # 2️⃣ MCP PROTOCOL LOGGING (only if level passes filter)
         if self._should_log(level):
-            if level.lower() == 'debug':
-                await ctx.debug(message)
-            elif level.lower() in ['info', 'notice']:
-                await ctx.info(message)
-            elif level.lower() == 'warning':
-                await ctx.warning(message)
-            elif level.lower() in ['error', 'critical', 'alert', 'emergency']:
-                await ctx.error(message)
+            try:
+                if level.lower() == 'debug':
+                    await ctx.debug(message)
+                elif level.lower() in ['info', 'notice']:
+                    await ctx.info(message)
+                elif level.lower() == 'warning':
+                    await ctx.warning(message)
+                elif level.lower() in ['error', 'critical', 'alert', 'emergency']:
+                    await ctx.error(message)
+            except Exception as e:
+                # Fallback to file logging if MCP logging fails
+                self.logger.warning(f"MCP logging failed, falling back to file: {e}")
+    
+    async def report_progress(self, ctx, progress: int, total: int, message: str):
+        """
+        Report progress to the client for long-running operations.
+        Follows the thales-dpod-mcp-server pattern: ctx.report_progress(progress, total, message)
+        """
+        try:
+            await ctx.report_progress(progress, total, message)
+        except Exception as e:
+            # Fallback to file logging if progress reporting fails
+            self.logger.warning(f"Progress reporting failed: {e}")
+    
+    async def log_with_progress(self, ctx, level: str, message: str, progress: int = None, total: int = None, data: dict = None):
+        """
+        Enhanced logging with progress reporting for long-running operations.
+        Combines dual logging and progress reporting.
+        """
+        # Log the message using dual logging
+        await self.dual_log(ctx, level, message, data)
+        
+        # Report progress if provided
+        if progress is not None and total is not None:
+            await self.report_progress(ctx, progress, total, message)
 
 
 class ThalesCDSPCSMTools:
@@ -170,7 +206,7 @@ class ThalesCDSPCSMTools:
         from .auth_methods.auth_methods_manager import AuthMethodsManager
         from .customer_fragments.manage_customer_fragments import ManageCustomerFragmentsTools
         from .guidelines.security_guidelines import SecurityGuidelinesTools
-        from .rotation.manage_rotation import ManageRotationTools
+        from .rotation.manage_rotation_settings import ManageRotationSettingsTools
         from .roles.manage_roles import ManageRolesTools
         from .targets.manage_targets import ManageTargetsTools
         from .monitoring.manage_analytics import ManageAnalyticsTools
@@ -182,10 +218,10 @@ class ThalesCDSPCSMTools:
         tool_classes = [
             (ManageSecretsTools, "manage_secrets"),
             (ManageDFCKeysTools, "manage_dfc_keys"),
-            (AuthMethodsManager, "auth_methods_manager"),
+            (AuthMethodsManager, "manage_auth_methods"),
             (ManageCustomerFragmentsTools, "manage_customer_fragments"),
             (SecurityGuidelinesTools, "security_guidelines"),
-            (ManageRotationTools, "manage_rotation"),
+            (ManageRotationSettingsTools, "manage_rotation_settings"),
             (ManageRolesTools, "manage_roles"),
             (ManageTargetsTools, "manage_targets"),
             (ManageAnalyticsTools, "manage_analytics"),
@@ -199,7 +235,11 @@ class ThalesCDSPCSMTools:
         
         # Register tools in alphabetical order
         for tool_class, expected_name in tool_classes:
-            self.add_tool_class(tool_class(self.client))
+            tool_instance = tool_class(self.client)
+            # Use the expected name instead of auto-generated name
+            self.tools[expected_name] = tool_instance
+            if logger.isEnabledFor(logging.INFO):
+                logger.info(f"Registered tool: {expected_name}")
         
         if logger.isEnabledFor(logging.INFO):
             logger.info(f"Registered {len(self.tools)} consolidated tools in alphabetical order") 

@@ -7,13 +7,13 @@ Available tools in the Thales CSM MCP Server.
 | Tool | Description | Main Actions |
 |------|-------------|--------------|
 | `manage_secrets` | Universal secret management (static, dynamic, rotated) | `create`, `get`, `update`, `delete`, `delete_items`, `list`, `smart_delete_directory` |
-| `manage_dfc_keys` | Encryption key management (AES, RSA) | `create`, `update`, `delete`, `list`, `set_state` |
+| `manage_dfc_keys` | Encryption key management (AES, RSA) | `create`, `update`, `delete`, `list`, `set_state`, `rotate` |
 | `manage_auth_methods` | Authentication method management | `create_api_key`, `create_email`, `update`, `delete`, `delete_auth_methods`, `list`, `get` |
-| `manage_rotation` | Secret and key rotation management | `set_rotation`, `update_settings`, `list_rotation`, `get_rotation_status` |
-| `manage_customer_fragments` | Customer fragment management | `create`, `delete`, `list` |
+| `manage_rotation_settings` | Secret and key rotation management | `set_rotation`, `update_settings`, `list_rotation`, `get_rotation_status` |
+| `manage_customer_fragments` | Customer fragment management | `export`, `download`, `list` |
 | `security_guidelines` | Security best practices | `compliance` |
 | `manage_roles` | Role management and access control | `list`, `get` |
-| `manage_targets` | Target management and configuration | `list`, `get` |
+| `manage_targets` | Target management and configuration | `list`, `get`, `create` |
 | `manage_analytics` | Analytics and monitoring data | `get` |
 | `manage_account` | Account settings and licensing | `get` |
 | `get_api_reference` | API reference for native integrations | `get` |
@@ -26,19 +26,37 @@ This is the **main tool** for all secret operations.
 #### **Basic Operations**
 ```bash
 # Create static secret
-manage_secrets action=create name=/my/secret value="password123" description="Database password"
+manage_secrets action=create_static_secret name=/my/secret value="password123" description="Database password"
 
-# Create dynamic secret
-manage_secrets action=create name=/my/dynamic_secret secret_type=dynamic dynamic_type=mysql ttl=3600
+# Create dynamic secret (use specific actions instead)
+# manage_secrets action=create_dynamic_secret_mysql name=/my/dynamic_secret mysql_host=db.example.com mysql_port=3306 mysql_dbname=app_db mysql_username=admin mysql_password=adminpass password_length=16 user_ttl=1h
 
-# Create rotated secret
-manage_secrets action=create name=/my/rotated_secret secret_type=rotated auto_rotate=true rotation_interval=86400
+# Create rotated secret (not yet implemented - use create_static_secret for now)
+# manage_secrets action=create_static_secret name=/my/rotated_secret secret_type=rotated auto_rotate=true rotation_interval=86400
 
-# Get secret value
-manage_secrets action=get name=/my/secret
+# Get static secret value
+manage_secrets action=get_static_secret_value name=/my/secret
+
+# Get dynamic secret
+manage_secrets action=get_dynamic_secret name=/my/dynamic_secret
+
+# Get dynamic secret value with target
+manage_secrets action=get_dynamic_secret_value name=/my/dynamic_secret
 
 # List secrets in directory
 manage_secrets action=list path=/my/secrets
+
+# List only dynamic secrets within a specific directory
+manage_secrets action=list path=/my/secrets secret_types=["dynamic-secret"]
+
+# List only static and rotated secrets within a specific directory
+manage_secrets action=list path=/my/secrets secret_types=["static-secret", "dynamic-secret"]
+
+# List secrets with name filtering and type filtering within a directory
+manage_secrets action=list path=/my/secrets filter_by="database*" secret_types=["dynamic-secret"]
+
+# List ALL dynamic secrets globally (recursive search across entire vault)
+manage_secrets action=list_dynamic_secrets
 
 # Update secret
 manage_secrets action=update name=/my/secret value="new_password" description="Updated password"
@@ -102,32 +120,18 @@ Manage authentication methods for secure access.
 #### **Authentication Operations**
 ```bash
 # Create API key method
-manage_auth_methods action=create_api_key name=/my/api_key access_id="your_id" access_key="your_key"
-
-# Create AWS IAM method
-manage_auth_methods action=create_api_key name=/my/aws_auth aws_access_key_id="AKIA..." aws_secret_access_key="..." aws_region="us-east-1"
-
-# Create Azure AD method
-manage_auth_methods action=create_api_key name=/my/azure_auth tenant_id="..." client_id="..." client_secret="..."
+manage_auth_methods action=create_api_key name=/my/api_key
 
 # List methods
 manage_auth_methods action=list
-
-# Update method
-manage_auth_methods action=update name=/my/api_key access_key="new_key"
 
 # Delete method
 manage_auth_methods action=delete name=/my/api_key
 ```
 
-#### **Supported Methods**
-- **API Key**: Standard API key authentication
-- **AWS IAM**: AWS Identity and Access Management
-- **Azure AD**: Azure Active Directory
-
 ## 🔄 **Secret and Key Rotation**
 
-### **Primary Tool: `manage_rotation`**
+### **Primary Tool: `manage_rotation_settings`**
 Manage automatic rotation settings for secrets and DFC keys to maintain security compliance.
 
 #### **Rotation Operations**
@@ -229,10 +233,19 @@ manage_targets action=get name="mysql-database" target_version=2
 
 # Get target details with JSON output
 manage_targets action=get name="mysql-database" json=true
+
+# Create new database target
+manage_targets action=create target_type="database" name="/database/prod-mysql" db_type="mysql" host="db.example.com" db_name="production" user_name="app_user" pwd="secure_password" description="Production MySQL database"
+
+# Create PostgreSQL target with SSL
+manage_targets action=create target_type="database" name="/database/prod-postgres" db_type="postgres" host="postgres.example.com" port="5432" db_name="app_db" user_name="app_user" pwd="secure_password" ssl=true description="Production PostgreSQL with SSL"
+
+# Create Snowflake target with key-based auth
+manage_targets action=create target_type="database" name="/database/snowflake-analytics" db_type="snowflake" host="company.snowflakecomputing.com" db_name="ANALYTICS" user_name="data_user" pwd="temp_password" snowflake_account="company.us-east-1" snowflake_api_private_key="base64_encoded_key" description="Analytics Snowflake instance"
 ```
 
 #### **Supported Target Types**
-- **Databases**: `hanadb`, `cassandra`, `mysql`, `mongodb`, `snowflake`, `mssql`, `redshift`, `postgres`, `oracle`
+- **Databases**: `mysql`, `mssql`, `hanadb`, `postgres`, `mongodb`, `snowflake`, `oracle`, `cassandra`, `redshift`, `redis`
 - **Cloud Platforms**: `aws`, `azure`, `gcp`, `gke`, `eks`, `k8s`
 - **Services**: `ssh`, `rabbitmq`, `artifactory`, `dockerhub`, `github`, `chef`, `web`, `salesforce`
 - **Security**: `venafi`, `ldap`

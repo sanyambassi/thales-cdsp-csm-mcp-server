@@ -117,7 +117,7 @@ async def test_stdio_mcp():
             'manage_auth_methods',
             'manage_customer_fragments',
             'security_guidelines',
-            'manage_rotation'
+            'manage_rotation_settings'
         ]
         
         for tool in expected_tools:
@@ -146,11 +146,41 @@ async def test_stdio_mcp():
         process.stdin.write(list_items_str)
         process.stdin.flush()
         
-        # Read list items response
-        list_items_response = process.stdout.readline()
-        assert list_items_response, "No response from list_items"
+        # Read list items response - handle multiple messages (notifications + result)
+        list_items_data = None
+        max_attempts = 10  # Prevent infinite loop
+        attempts = 0
         
-        list_items_data = json.loads(list_items_response)
+        while attempts < max_attempts:
+            list_items_response = process.stdout.readline()
+            assert list_items_response, "No response from list_items"
+            
+            try:
+                response_data = json.loads(list_items_response)
+                
+                # Check if this is a notification (which we can ignore)
+                if response_data.get('method') == 'notifications/message':
+                    print(f"   📢 Notification: {response_data.get('params', {}).get('data', {}).get('msg', 'No message')}")
+                    attempts += 1
+                    continue
+                
+                # Check if this is the actual result
+                if 'result' in response_data:
+                    list_items_data = response_data
+                    break
+                    
+                # If it's neither notification nor result, it might be an error
+                if 'error' in response_data:
+                    raise Exception(f"Tool call failed: {response_data['error']}")
+                    
+                attempts += 1
+                
+            except json.JSONDecodeError as e:
+                print(f"   ⚠️  Failed to parse response: {list_items_response}")
+                attempts += 1
+                continue
+        
+        assert list_items_data is not None, f"Could not get valid result after {max_attempts} attempts"
         assert 'result' in list_items_data, f"List items failed: {list_items_data}"
         
         # Parse the consolidated tool response
@@ -237,11 +267,41 @@ async def test_stdio_mcp():
         process.stdin.write(dfc_keys_str)
         process.stdin.flush()
         
-        # Read DFC keys response
-        dfc_keys_response = process.stdout.readline()
-        assert dfc_keys_response, "No response from DFC keys list"
+        # Read DFC keys response - handle multiple messages (notifications + result)
+        dfc_keys_data = None
+        max_attempts = 10  # Prevent infinite loop
+        attempts = 0
         
-        dfc_keys_data = json.loads(dfc_keys_response)
+        while attempts < max_attempts:
+            dfc_keys_response = process.stdout.readline()
+            assert dfc_keys_response, "No response from DFC keys list"
+            
+            try:
+                response_data = json.loads(dfc_keys_response)
+                
+                # Check if this is a notification (which we can ignore)
+                if response_data.get('method') == 'notifications/message':
+                    print(f"   📢 DFC Notification: {response_data.get('params', {}).get('data', {}).get('msg', 'No message')}")
+                    attempts += 1
+                    continue
+                
+                # Check if this is the actual result
+                if 'result' in response_data:
+                    dfc_keys_data = response_data
+                    break
+                    
+                # If it's neither notification nor result, it might be an error
+                if 'error' in response_data:
+                    raise Exception(f"DFC keys tool call failed: {response_data['error']}")
+                    
+                attempts += 1
+                
+            except json.JSONDecodeError as e:
+                print(f"   ⚠️  Failed to parse DFC response: {dfc_keys_response}")
+                attempts += 1
+                continue
+        
+        assert dfc_keys_data is not None, f"Could not get valid DFC result after {max_attempts} attempts"
         assert 'result' in dfc_keys_data, f"DFC keys list failed: {dfc_keys_data}"
         
         dfc_result = dfc_keys_data['result']

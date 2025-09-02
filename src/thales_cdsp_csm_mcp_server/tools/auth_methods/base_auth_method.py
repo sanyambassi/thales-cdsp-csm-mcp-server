@@ -10,14 +10,16 @@ from typing import List, Dict, Any, Optional
 from abc import ABC, abstractmethod
 
 from ...core.client import ThalesCDSPCSMClient
+from ..base import BaseThalesCDSPCSMTool
 
 logger = logging.getLogger(__name__)
 
 
-class BaseAuthMethod(ABC):
+class BaseAuthMethod(BaseThalesCDSPCSMTool, ABC):
     """Base class for authentication method implementations."""
     
-    def __init__(self, client: ThalesCDSPCSMClient):
+    def __init__(self, client: ThalesCDSPCSMClient, parent_logger=None):
+        super().__init__(client, parent_logger)
         self.client = client
     
     @abstractmethod

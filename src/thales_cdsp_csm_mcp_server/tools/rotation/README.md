@@ -1,10 +1,10 @@
 # Rotation Management Tools
 
-This directory contains tools for managing rotation settings in the Thales CDSP CSM MCP Server.
+This directory contains tools for managing rotation settings for secrets and keys.
 
 ## Available Tool
 
-### `manage_rotation`
+### `manage_rotation_settings`
 Comprehensive rotation management tool with the following actions:
 
 - **`set_rotation`** - Set rotation settings for secrets and keys

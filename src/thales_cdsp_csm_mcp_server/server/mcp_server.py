@@ -7,6 +7,7 @@ using FastMCP and the MCP protocol.
 """
 
 import os
+import asyncio
 import threading
 import time
 import logging
@@ -34,9 +35,16 @@ class ThalesCDSPCSMMCPServer:
         if log_level:
             os.environ["LOG_LEVEL"] = log_level.upper()
         
+        # Initialize logging configuration FIRST
         self.config = ThalesCDSPCSMConfig()
+        self.current_log_level = self.config.log_level.lower()
+        
+        # Setup logging before creating tools
+        self._setup_file_logging()
+        self._setup_mcp_logging()
+        
+        # Now create client and tools with proper logging
         self.client = ThalesCDSPCSMClient(self.config)
-        # Generate dynamic instructions based on actual registered tools
         self.tools = ThalesCDSPCSMTools(self.client)
         
         # Build dynamic server instructions - no hardcoded descriptions
@@ -75,11 +83,8 @@ This server is SPECIALIZED and OPTIMIZED for Thales CSM operations."""
             instructions=server_instructions
         )
         
-        # Initialize logging first
-        self.current_log_level = self.config.log_level.lower()
-        self._setup_file_logging()
+        # Setup remaining components
         self._setup_tools()
-        self._setup_mcp_logging()
         self._setup_health_endpoint()
         self._setup_server_capabilities()
         self._setup_ai_guidance_prompts()
@@ -113,9 +118,9 @@ This server is SPECIALIZED and OPTIMIZED for Thales CSM operations."""
             # Prevent propagation to avoid duplicate logs
             self.file_logger.propagate = False
             
-            if self._should_log("info"):
-                self.log("info", f"File logging configured to {log_file}")
-                
+            # Always log this confirmation (bypass level filtering)
+            self.log("info", f"File logging configured to {log_file}")
+            
         except Exception as e:
             # Fallback to print if file logging setup fails
             print(f"Warning: Could not setup file logging: {e}")
@@ -129,18 +134,8 @@ This server is SPECIALIZED and OPTIMIZED for Thales CSM operations."""
     
     def _setup_health_endpoint(self):
         """Setup health check endpoint for HTTP transport."""
-        # Use FastMCP's built-in custom_route decorator
-        try:
-            # Register the health endpoint using FastMCP's custom_route
-            @self.server.custom_route("/health", methods=["GET"])
-            async def health_check(request):
-                return await self._health_check(request)
-            
-            if self._should_log("info"):
-                self.log("info", "Health check endpoint registered at /health using FastMCP custom_route")
-        except Exception as e:
-            self.log("warning", f"Could not register health endpoint: {e}")
-            self.log("info", "Health endpoint will not be available")
+        # This will be called after the server starts to ensure proper registration
+        pass
     
     def _setup_server_capabilities(self):
         """Setup server capability metadata for AI assistant guidance."""
@@ -283,37 +278,29 @@ This server is SPECIALIZED and OPTIMIZED for Thales CSM operations."""
     
     def log(self, level: str, message: str, data: dict = None):
         """Send a log message through MCP protocol AND file."""
-        if not self._should_log(level):
-            return
-            
-        # 1️⃣ FILE LOGGING (always write to file)
+        # 1️⃣ FILE LOGGING (always write to file regardless of level)
         self._write_to_file(level, message, data)
+        
+        # 2️⃣ CONSOLE LOGGING (always show on console for debugging)
+        import sys
+        level_emoji = {
+            'debug': '🐛', 'info': 'ℹ️', 'notice': '📢', 'warning': '⚠️',
+            'error': '❌', 'critical': '🚨', 'alert': '🚨', 'emergency': '🚨'
+        }
+        emoji = level_emoji.get(level.lower(), '📝')
+        console_message = f"{emoji} [{level.upper()}] {message}"
+        if data:
+            console_message += f" | Data: {data}"
+        print(console_message, file=sys.stderr)
             
-        try:
-            # 2️⃣ MCP PROTOCOL (primary)
-            if hasattr(self.server, 'log'):
-                self.server.log(level, message, data or {})
-            else:
-                # 3️⃣ MCP NOTIFICATIONS (fallback)
-                notification = {
-                    "jsonrpc": "2.0",
-                    "method": "notifications/message",
-                    "params": {
-                        "level": level,
-                        "logger": "thales-csm-mcp",
-                        "data": {
-                            "message": message,
-                            **(data or {})
-                        }
-                    }
-                }
-                # For stdio transport, print to stderr as fallback
-                import sys
-                print(f"[{level.upper()}] {message}", file=sys.stderr)
-                
-        except Exception as e:
-            # 4️⃣ Ultimate fallback
-            print(f"[{level.upper()}] {message} (MCP logging failed: {e})")
+        # 3️⃣ MCP PROTOCOL (only if level passes filter)
+        if self._should_log(level):
+            try:
+                if hasattr(self, 'server') and hasattr(self.server, 'log'):
+                    self.server.log(level, message, data or {})
+            except Exception as e:
+                # MCP logging failed, but we already logged to file and console
+                pass
     
     def _write_to_file(self, level: str, message: str, data: dict = None):
         """Write log message to file following MCP specification use cases."""
@@ -356,7 +343,7 @@ This server is SPECIALIZED and OPTIMIZED for Thales CSM operations."""
             context_prefix = level_context.get(level.lower(), f"[{level.upper()}]")
             final_message = f"{context_prefix}: {formatted_message}"
             
-            # Log to file with enhanced formatting
+            # Log to file with enhanced formatting - ALWAYS write to file regardless of level
             self.file_logger.log(python_level, final_message)
             
         except Exception as e:
@@ -400,13 +387,21 @@ This server is SPECIALIZED and OPTIMIZED for Thales CSM operations."""
         """Setup AI guidance prompts using FastMCP's @prompt decorator."""
         try:
             # Import the new prompts
-            from .prompts import get_account_summary, get_account_analytics, create_auth_api_key, create_auth_email
+            from .prompts import get_account_summary, get_account_analytics, create_auth_api_key, create_auth_email, develop_or_secure_app
             
             # Register the new actionable prompts
             self.server.prompt()(get_account_summary)
             self.server.prompt()(get_account_analytics)
             self.server.prompt()(create_auth_api_key)
             self.server.prompt()(create_auth_email)
+            self.server.prompt()(develop_or_secure_app)
+            
+            # Verify prompt registration
+            if hasattr(self.server, '_prompts'):
+                registered_count = len(self.server._prompts)
+                self.log("info", f"Successfully registered {registered_count} prompts")
+            else:
+                self.log("info", "Prompts registered (count verification not available)")
             
             if self._should_log("info"):
                 self.log("info", "New actionable prompts configured successfully")
@@ -448,21 +443,40 @@ This server is SPECIALIZED and OPTIMIZED for Thales CSM operations."""
         # Only consolidated tools - no additional server tools needed
         return len(self.tools.tools)
     
-    def _get_total_prompt_count(self) -> int:
+    async def _get_total_prompt_count(self) -> int:
         """Get the total count of all prompts."""
-        try:
-            # Get the actual count of registered prompts from FastMCP
-            if hasattr(self.server, '_prompts'):
-                prompt_count = len(self.server._prompts)
-                if prompt_count > 0:
-                    return prompt_count
-            
-            # Return known prompt count if detection fails
-            return 2
-            
-        except Exception:
-            # Return known prompt count if detection fails
-            return 2
+        # Use FastMCP's async get_prompts method - NO FALLBACKS
+        if hasattr(self.server, 'get_prompts'):
+            prompts = await self.server.get_prompts()
+            if prompts:
+                return len(prompts)
+        
+        # No fallback - return 0 if we can't get prompts
+        return 0
+    
+    async def _discover_tools_and_prompts_dynamically(self) -> tuple[list, list]:
+        """
+        Dynamically discover tools and prompts during server startup.
+        Returns: (tool_names, prompt_names)
+        """
+        # 1️⃣ DYNAMIC TOOL DISCOVERY
+        tool_names = []
+        
+        # Get tools from our tools manager (this is the source of truth)
+        tool_names = list(self.tools.tools.keys())
+        
+        # 2️⃣ DYNAMIC PROMPT DISCOVERY
+        prompt_names = []
+        
+        # Use FastMCP's async get_prompts method - NO FALLBACKS
+        if hasattr(self.server, 'get_prompts'):
+            prompts = await self.server.get_prompts()
+            if prompts:
+                prompt_names = list(prompts.keys())
+        
+        return tool_names, prompt_names
+    
+
     
     def _validate_protocol_version(self, client_version: str) -> bool:
         """Validate if the client's protocol version is supported."""
@@ -491,8 +505,17 @@ This server is SPECIALIZED and OPTIMIZED for Thales CSM operations."""
     
     def _register_health_endpoint_after_startup(self):
         """Register health endpoint after the server has started."""
-        # This method is no longer needed since we register in _setup_health_endpoint
-        pass
+        try:
+            # Register the health endpoint using FastMCP's custom_route
+            @self.server.custom_route("/health", methods=["GET"])
+            async def health_check(request):
+                return await self._health_check(request)
+            
+            if self._should_log("info"):
+                self.log("info", "Health check endpoint registered at /health using FastMCP custom_route")
+        except Exception as e:
+            self.log("warning", f"Could not register health endpoint: {e}")
+            self.log("info", "Health endpoint will not be available")
     
     async def _health_check(self, request):
         """Health check endpoint response."""
@@ -501,25 +524,27 @@ This server is SPECIALIZED and OPTIMIZED for Thales CSM operations."""
             tool_count = len(self.tools.tools)
             tool_classes = list(self.tools.tools.keys())
             
+            # Debug logging to verify dynamic discovery
+            if self._should_log("debug"):
+                self.log("debug", f"Health check - Tools found: {tool_count}")
+                self.log("debug", f"Health check - Tool names: {tool_classes}")
+            
             # Check configuration status
             config_status = "configured" if (self.config.access_id and self.config.access_key) else "incomplete"
             
             # Check client connectivity (basic check)
             client_status = "connected" if self.config.api_url else "no_api_url"
             
-            # Get prompt information
-            prompt_count = self._get_total_prompt_count()
-            prompt_names = []
+            # Get prompt information using dynamic discovery
             try:
-                if hasattr(self.server, '_prompts') and self.server._prompts:
-                    prompt_names = list(self.server._prompts.keys())
-                elif hasattr(self.server, 'prompts') and self.server.prompts:
-                    prompt_names = list(self.server.prompts.keys())
-                else:
-                    # Fallback to known prompts
-                    prompt_names = ["secret_management_priority", "tool_selection_strategy"]
-            except Exception:
-                prompt_names = ["secret_management_priority", "tool_selection_strategy"]
+                prompt_count = await self._get_total_prompt_count()
+                _, prompt_names = await self._discover_tools_and_prompts_dynamically()
+            except Exception as e:
+                # Fallback to basic discovery if async methods fail
+                prompt_count = len(getattr(self.server, '_prompts', {}))
+                prompt_names = list(getattr(self.server, '_prompts', {}).keys()) if hasattr(self.server, '_prompts') else []
+                if self._should_log("warning"):
+                    self.log("warning", f"Dynamic prompt discovery failed, using fallback: {e}")
             
             health_data = {
                 "status": "healthy",
@@ -575,7 +600,7 @@ This server is SPECIALIZED and OPTIMIZED for Thales CSM operations."""
             from starlette.responses import JSONResponse
             return JSONResponse(error_data, status_code=500)
     
-    def _print_startup_info(self, transport_mode: str = "stdio"):
+    async def _print_startup_info(self, transport_mode: str = "stdio"):
         """Print startup information including available tools and MCP protocol versions."""
         try:
             print("\n" + "="*80)
@@ -590,46 +615,31 @@ This server is SPECIALIZED and OPTIMIZED for Thales CSM operations."""
             # Transport Information
             print(f"\n🚀 TRANSPORT MODE: {transport_mode.upper()}")
             if transport_mode == "streamable-http":
-                print(f"   🌐 HTTP Endpoint: http://localhost:8000")
-                print(f"   🔍 Health Check: http://localhost:8000/health")
+                # Use dynamic host and port from server configuration
+                host = getattr(self, 'server_host', 'localhost')
+                port = getattr(self, 'server_port', 8000)
+                print(f"   🌐 HTTP Endpoint: http://{host}:{port}")
+                print(f"   🔍 Health Check: http://{host}:{port}/health")
             
             # Available Tools
             print(f"\n🛠️  AVAILABLE TOOLS:")
             tool_count = self._get_total_tool_count()
-            prompt_count = self._get_total_prompt_count()
+            prompt_count = await self._get_total_prompt_count()
             print(f"   • Total Tools: {tool_count}")
             print(f"   • Available Prompts: {prompt_count}")
             
+            # DYNAMIC DISCOVERY: Get tools and prompts dynamically during startup
+            discovered_tools, discovered_prompts = await self._discover_tools_and_prompts_dynamically()
+            
             # List consolidated tools
-            print(f"\n   📋 CONSOLIDATED TOOLS ({len(self.tools.tools)}):")
-            # Map internal names to public names for display
-            tool_name_mapping = {
-                'auth_methods_manager': 'manage_auth_methods',
-                'manage_customer_fragments': 'manage_customer_fragments',
-                'manage_dfc_keys': 'manage_dfc_keys',
-                'manage_rotation': 'manage_rotation',
-                'manage_secrets': 'manage_secrets',
-                'security_guidelines': 'security_guidelines'
-            }
-            for tool_name in sorted(self.tools.tools.keys()):
-                public_name = tool_name_mapping.get(tool_name, tool_name)
-                print(f"      • {public_name}")
+            print(f"\n   📋 CONSOLIDATED TOOLS ({len(discovered_tools)}):")
+            for tool_name in sorted(discovered_tools):
+                print(f"      • {tool_name}")
             
             # List prompts
-            print(f"\n   📝 PROMPTS ({prompt_count}):")
-            try:
-                # Try to get actual prompt names dynamically from FastMCP
-                if hasattr(self.server, '_prompts') and self.server._prompts:
-                    for prompt_name in sorted(self.server._prompts.keys()):
-                        print(f"      • {prompt_name}")
-                else:
-                    # Show known prompts if detection fails
-                    print(f"      • secret_management_priority")
-                    print(f"      • tool_selection_strategy")
-            except Exception:
-                # Fallback to known prompts
-                print(f"      • secret_management_priority")
-                print(f"      • tool_selection_strategy")
+            print(f"\n   📝 PROMPTS ({len(discovered_prompts)}):")
+            for prompt_name in sorted(discovered_prompts):
+                print(f"      • {prompt_name}")
             
             # MCP Capabilities
             print(f"\n📋 MCP CAPABILITIES:")
@@ -694,8 +704,15 @@ This server is SPECIALIZED and OPTIMIZED for Thales CSM operations."""
     def _show_startup_info_after_delay(self, delay: float = 2.0):
         """Show startup info after a delay to ensure it appears after FastMCP banner."""
         try:
+            import time
             time.sleep(delay)
-            self._print_startup_info(self.transport_mode)
+            # Use asyncio.run to run the async startup info in a new event loop
+            import asyncio
+            try:
+                asyncio.run(self._print_startup_info(self.transport_mode))
+            except RuntimeError:
+                # If we're already in an event loop, just print a simple message
+                print("\n🚀 Server startup complete - FastMCP is running")
         except Exception as e:
             # If startup info fails, just log it and continue
             if hasattr(self, 'log'):
@@ -734,8 +751,10 @@ This server is SPECIALIZED and OPTIMIZED for Thales CSM operations."""
                 self.log("error", "AKEYLESS_ACCESS_ID and AKEYLESS_ACCESS_KEY must be set")
                 return
             
-            # Set transport mode for startup info
+            # Set transport mode and configuration for startup info
             self.transport_mode = transport
+            self.server_host = host
+            self.server_port = port
             
             if transport == "stdio":
                 # For stdio: FastMCP-compliant approach - let FastMCP handle everything
@@ -743,10 +762,11 @@ This server is SPECIALIZED and OPTIMIZED for Thales CSM operations."""
                     self.log("info", "Starting stdio transport with FastMCP...")
                 
                 # Start startup info display in background thread
+                import threading
                 startup_thread = threading.Thread(target=self._show_startup_info_after_delay, daemon=True)
                 startup_thread.start()
                 
-                # Run FastMCP server
+                # Run FastMCP server synchronously
                 self.server.run()
             else:
                 # For HTTP transport: Use FastMCP's native HTTP support
@@ -757,10 +777,11 @@ This server is SPECIALIZED and OPTIMIZED for Thales CSM operations."""
                 self._register_health_endpoint_after_startup()
                 
                 # Start startup info display in background thread
+                import threading
                 startup_thread = threading.Thread(target=self._show_startup_info_after_delay, daemon=True)
                 startup_thread.start()
                 
-                # Use FastMCP's native HTTP transport
+                # Use FastMCP's native HTTP transport synchronously
                 self.server.run(transport="streamable-http", host=host, port=port)
             
         except Exception as e:

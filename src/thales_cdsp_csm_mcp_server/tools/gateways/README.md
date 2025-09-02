@@ -12,7 +12,6 @@ Enterprise gateway management tool with the following actions:
 ## Features
 
 - **Gateway Infrastructure Monitoring** - View all available gateways in your Akeyless environment
-- **Accessibility Control** - Filter gateways by accessibility levels
 - **JSON Output Support** - Get structured data for automation and integration
 - **Enterprise-Grade Security** - Built on Thales CipherTrust Secrets Management (CSM) with Akeyless Secrets Manager
 - **Comprehensive Logging** - Full audit trail for all gateway operations
@@ -27,10 +26,6 @@ Enterprise gateway management tool with the following actions:
 ## API Endpoint
 
 The tool uses the Akeyless `/list-gateways` endpoint to retrieve gateway information.
-
-## Authentication
-
-Requires valid Akeyless authentication token (automatically handled by the MCP server).
 
 ## Example Usage
 

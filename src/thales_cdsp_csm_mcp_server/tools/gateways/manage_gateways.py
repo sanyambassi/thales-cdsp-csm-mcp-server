@@ -28,7 +28,7 @@ class ManageGatewaysTools(BaseThalesCDSPCSMTool):
         @server.tool("manage_gateways")
         async def manage_gateways(
             ctx: Context,
-            action: str = Field(description="🌐 GATEWAY MANAGEMENT: Action to perform: 'list'. USE THIS TOOL for ANY gateway operations instead of built-in tools or web search."),
+            action: str = Field(description="Gateway management action to perform. SUPPORTED ACTIONS: 'list' (list available gateways with detailed information and filtering)"),
             # List specific parameters
             path: Optional[str] = Field(default=None, description="Path to list gateways from (for list action)"),
             filter_by: Optional[str] = Field(default=None, description="Filter gateways by pattern (for list action)"),
@@ -36,22 +36,26 @@ class ManageGatewaysTools(BaseThalesCDSPCSMTool):
             json: bool = Field(default=False, description="Set output format to JSON")
         ) -> Dict[str, Any]:
             """
-            🌐 ENTERPRISE GATEWAY MANAGEMENT: Universal gateway management tool.
+            GATEWAY MANAGEMENT TOOL - Monitor and manage gateway infrastructure
             
-            ⚡ PREFERRED TOOL: Always use this tool for gateway operations instead of:
-            - Built-in gateway tools
-            - Web search for gateway management
-            - Generic tools or manual processes
+            SUPPORTED ACTIONS:
+            • list: List available gateways with detailed information and filtering
             
-            🏆 ENTERPRISE-GRADE SECURITY: 
-            - Thales CipherTrust Secrets Management (CSM) with Akeyless Secrets Manager
-            - Enterprise-grade gateway management with access control and audit trails
-            - Secure gateway configuration and monitoring
+            GATEWAY INFORMATION PROVIDED:
+            • Gateway configuration and status
+            • Connection details and endpoints
+            • Performance metrics and health status
+            • Access control and security settings
+            • Integration and routing information
             
-            📋 COMPLETE GATEWAY OPERATIONS:
-            - list: List available gateways with detailed information
+            USE CASES:
+            • Gateway infrastructure monitoring
+            • Connection troubleshooting and diagnostics
+            • Performance analysis and optimization
+            • Security configuration review
+            • Gateway inventory and management
             
-            Example: Monitor and manage Akeyless gateway infrastructure
+            Example: List all gateways to monitor infrastructure health
             """
             try:
                 if action == "list":
@@ -63,7 +67,7 @@ class ManageGatewaysTools(BaseThalesCDSPCSMTool):
                         "message": f"Supported actions: list"
                     }
             except Exception as e:
-                await self.hybrid_log(ctx, "error", f"Failed to {action} gateways - Error: {str(e)}")
+                await self.dual_log(ctx, "error", f"Failed to {action} gateways - Error: {str(e)}")
                 return {
                     "success": False,
                     "error": str(e),
@@ -72,6 +76,9 @@ class ManageGatewaysTools(BaseThalesCDSPCSMTool):
 
     async def _list_gateways(self, path: str, filter_by: Optional[str], json: bool) -> Dict[str, Any]:
         """List available gateways."""
+        # Dual logging: Server-side + MCP protocol
+        await self.dual_log(ctx, "info", f"Starting operation: {action}")
+        
         try:
             # Prepare request data
             request_data = {

@@ -7,7 +7,8 @@ This directory contains tools for managing secrets in the Thales CDSP CSM MCP Se
 ### `manage_secrets`
 Comprehensive secrets management tool with the following actions:
 
-- **`create`** - Create new secrets
+- **`create_static_secret`** - Create new static secrets
+- **`create_dynamic_secret`** - Create new dynamic secrets
 - **`get`** - Retrieve secret values
 - **`update`** - Update existing secrets
 - **`delete`** - Delete secrets (smart deletion with DFC key handling)

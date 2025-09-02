@@ -58,7 +58,7 @@ class EmailAuthMethod(BaseAuthMethod):
             }
             
         except Exception as e:
-            self.log("error", f"Failed to create email auth method '{name}'", {"error": str(e), "name": name, "email": email})
+            self.dual_log(ctx, "error", f"Failed to create email auth method '{name}'", {"error": str(e), "name": name, "email": email})
             return {
                 "success": False,
                 "error": str(e),
@@ -107,7 +107,7 @@ class EmailAuthMethod(BaseAuthMethod):
             }
             
         except Exception as e:
-            self.log("error", f"Failed to update email authentication method '{name}'", {"error": str(e), "name": name})
+            self.dual_log(ctx, "error", f"Failed to update email authentication method '{name}'", {"error": str(e), "name": name})
             return {
                 "success": False,
                 "error": str(e),

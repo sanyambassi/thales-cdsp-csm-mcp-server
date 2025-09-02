@@ -12,7 +12,7 @@ from .dfc_keys.manage_dfc_keys import ManageDFCKeysTools
 from .auth_methods.auth_methods_manager import AuthMethodsManager
 from .customer_fragments.manage_customer_fragments import ManageCustomerFragmentsTools
 from .guidelines.security_guidelines import SecurityGuidelinesTools
-from .rotation.manage_rotation import ManageRotationTools
+from .rotation.manage_rotation_settings import ManageRotationSettingsTools
 from .roles.manage_roles import ManageRolesTools
 from .targets.manage_targets import ManageTargetsTools
 from .monitoring.manage_analytics import ManageAnalyticsTools

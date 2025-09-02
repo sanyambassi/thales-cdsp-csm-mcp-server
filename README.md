@@ -21,6 +21,29 @@ Simple MCP server for Thales CipherTrust Secrets Management, powered by Akeyless
 > - Configuration and setup
 > - Deployment options
 
+## 🎯 **Key Features**
+
+### **Intelligent App Development & Security Migration**
+The server includes a powerful prompt that automatically determines whether you want to:
+- **Create a NEW app** with built-in CipherTrust integration
+- **Secure an EXISTING app** by migrating hardcoded secrets to CipherTrust
+
+**For New Apps:**
+- Generates complete Python implementations with CipherTrust integration
+- Uses the `get_api_reference` tool for native API integration
+- Provides production-ready code with proper error handling
+
+**For Existing Apps:**
+- Scans codebase for hardcoded secrets using intelligent detection
+- Categorizes secrets by type (key-value pairs vs standalone)
+- Uses `manage_secrets` MCP tool to create CipherTrust secrets
+- Generates migration reports and updated code
+- Provides testing and validation instructions
+
+**Secret Type Classification:**
+- **Key-Value Pairs/JSON format**: AWS credentials, database configs, OAuth tokens
+- **Standalone Secrets (Text format)**: Single passwords, individual tokens, certificates
+
 ## 📋 **Prerequisites**
 
 Before you begin, ensure you have the following installed on your system:
@@ -100,13 +123,14 @@ pip install fastmcp
 python -c "import fastmcp; print(f'fastmcp version: {fastmcp.__version__}')"
 ```
 
-## 🚀 **What It Does**
+## 🚀 **What this mCP server features**
 
 - **Secrets Management**: Create, read, update, delete secrets
 - **DFC Key Management**: DFC encryption keys (AES, RSA)
 - **Account Management**: Get Akeyless account details
 - **Analytics**: Fetch analytics data
 - **Authentication Methods**: Manage Authentication Methods
+- **App Development & Security**: Intelligent app creation and secret migration
 - **Roles**: Manage Roles
 - **Targets**: Manage Targets
 - **Security**: Guidelines and best practices
@@ -143,6 +167,7 @@ AKEYLESS_ACCESS_ID=your_access_id
 AKEYLESS_ACCESS_KEY=your_access_key
 AKEYLESS_API_URL=https://your-ciphertrust-manager/akeyless-api/v2
 LOG_LEVEL=INFO
+AKEYLESS_VERIFY_SSL=false
 ```
 
 ### **3. Run**
@@ -169,14 +194,14 @@ uv run python main.py --transport streamable-http --host localhost --port 8000
 
 | Tool | Description |
 |------|-------------|
-| `manage_secrets` | Create, read, update, delete secrets |
+| `manage_secrets` | Create static secrets, get static secret values, update, delete secrets (static, dynamic, rotated) with type filtering and dynamic secret creation |
 | `manage_dfc_keys` | Manage encryption keys |
 | `manage_auth_methods` | Authentication and access control |
 | `manage_rotation` | Secret rotation policies |
 | `manage_customer_fragments` | Enhanced security features |
 | `security_guidelines` | Security best practices |
 | `manage_roles` | List and get role information |
-| `manage_targets` | List and get target information |
+| `manage_targets` | List, get, and create targets |
 | `manage_analytics` | Get analytics and monitoring data |
 | `manage_account` | Get account settings and licensing |
 | `get_api_reference` | Get API reference for native Akeyless integrations (generic workflows + S3 example) |

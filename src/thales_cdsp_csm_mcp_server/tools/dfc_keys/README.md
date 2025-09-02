@@ -9,7 +9,7 @@ Comprehensive DFC keys management tool with the following actions:
 
 - **`create`** - Create new DFC keys with encryption algorithms
 - **`update`** - Update DFC key properties and settings
-- **`delete`** - Delete DFC keys (with soft delete support)
+- **`delete`** - Delete DFC keys (with immediate and scheduled deletion)
 - **`list`** - List DFC keys in directories
 - **`set_state`** - Enable/disable DFC keys
 
@@ -20,8 +20,6 @@ Comprehensive DFC keys management tool with the following actions:
 - **Certificate Generation**: Self-signed certificate creation with X.509 support
 - **Customer Fragments**: Integration with customer fragment protection
 - **Delete Protection**: Protection from accidental deletion
-- **Tagging System**: Flexible tagging for organization
-- **Directory-based organization**
+- **Tagging System**: Supports tagging for organization
 - **Filtering capabilities**
 - **Comprehensive audit logging**
-- **Integration with secrets management tool for protection handling** 

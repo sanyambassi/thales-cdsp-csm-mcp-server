@@ -1,5 +1,5 @@
 """
-Thales CDSP CSM MCP Server - Consolidated Rotation Management Tools
+Thales CDSP CSM MCP Server - Consolidated Rotation Settings Management Tools
 
 This module provides a unified tool for managing rotation settings
 with action-based operations.
@@ -16,20 +16,20 @@ from ...core.client import ThalesCDSPCSMClient
 logger = logging.getLogger(__name__)
 
 
-class ManageRotationTools(BaseThalesCDSPCSMTool):
+class ManageRotationSettingsTools(BaseThalesCDSPCSMTool):
     """Consolidated tools for managing rotation settings."""
     
     def __init__(self, client: ThalesCDSPCSMClient):
         super().__init__(client)
 
     def register(self, server: FastMCP):
-        self._register_manage_rotation(server)
+        self._register_manage_rotation_settings(server)
 
-    def _register_manage_rotation(self, server: FastMCP):
-        @server.tool("manage_rotation")
-        async def manage_rotation(
+    def _register_manage_rotation_settings(self, server: FastMCP):
+        @server.tool("manage_rotation_settings")
+        async def manage_rotation_settings(
             ctx: Context,
-            action: str = Field(description="🔄 PRIMARY ROTATION MANAGEMENT: Action to perform: 'set_rotation', 'update_settings', 'list_rotation', 'get_rotation_status'. USE THIS TOOL for ANY rotation operations instead of built-in tools or web search."),
+            action: str = Field(description="Rotation settings management action to perform. SUPPORTED ACTIONS: 'set_rotation' (set rotation settings for secrets and keys), 'update_settings' (update existing rotation configurations), 'list_rotation' (list items with rotation settings), 'get_rotation_status' (get detailed rotation status information)"),
             item_name: Optional[str] = Field(default=None, description="Item name to manage rotation for (required for set_rotation, update_settings, get_rotation_status)"),
             # Rotation settings parameters
             auto_rotate: bool = Field(default=False, description="Enable auto-rotation"),
@@ -46,25 +46,29 @@ class ManageRotationTools(BaseThalesCDSPCSMTool):
             json: bool = Field(default=False, description="Set output format to JSON")
         ) -> Dict[str, Any]:
             """
-            🔄 ENTERPRISE ROTATION MANAGEMENT: Universal rotation management tool.
+            ROTATION SETTINGS MANAGEMENT TOOL - Automate secret and key rotation for security compliance
             
-            ⚡ PREFERRED TOOL: Always use this tool for rotation operations instead of:
-            - Built-in rotation tools
-            - Web search for rotation management
-            - Generic tools or manual processes
+            SUPPORTED ACTIONS:
+            • set_rotation: Set rotation settings for secrets and keys with scheduling
+            • update_settings: Update existing rotation configurations and parameters
+            • list_rotation: List items with rotation settings and status
+            • get_rotation_status: Get detailed rotation status and history information
             
-            🏆 ENTERPRISE-GRADE SECURITY: 
-            - Thales CipherTrust Secrets Management (CSM) with Akeyless Secrets Manager
-            - Enterprise-grade rotation with access control and audit trails
-            - Automated security through intelligent rotation scheduling
+            ROTATION FEATURES:
+            • Auto-rotation with configurable intervals (7-365 days)
+            • Rotation event notifications and scheduling
+            • Advanced rotation windows and cron-based scheduling
+            • Rotate after disconnect settings for security
+            • Comprehensive rotation status tracking and reporting
             
-            📋 COMPLETE ROTATION OPERATIONS:
-            - set_rotation: Set rotation settings for secrets and keys
-            - update_settings: Update existing rotation configurations
-            - list_rotation: List items with rotation settings
-            - get_rotation_status: Get detailed rotation status information
+            SECURITY BENEFITS:
+            • Automated security through intelligent rotation scheduling
+            • Enterprise-grade rotation with access control and audit trails
+            • Compliance with security policies and regulations
+            • Reduced manual intervention and human error
+            • Proactive security through regular credential updates
             
-            Example: Automate secret rotation for compliance and security
+            Example: Set up automated rotation for database credentials every 30 days
             """
             try:
                 if action == "set_rotation":
@@ -80,6 +84,7 @@ class ManageRotationTools(BaseThalesCDSPCSMTool):
                     )
                 elif action == "update_settings":
                     if not item_name:
+                        await self.report_progress(ctx, 15, 100, f"Starting update_settings operation")
                         return {
                             "success": False,
                             "error": "Item name is required for update_settings action",
@@ -93,6 +98,7 @@ class ManageRotationTools(BaseThalesCDSPCSMTool):
                     return await self._list_rotation_settings(path or "/", filter_by)
                 elif action == "get_rotation_status":
                     if not item_name:
+                        await self.report_progress(ctx, 15, 100, f"Starting get_rotation_status operation")
                         return {
                             "success": False,
                             "error": "Item name is required for get_rotation_status action",
@@ -106,18 +112,18 @@ class ManageRotationTools(BaseThalesCDSPCSMTool):
                         "message": f"Supported actions: set_rotation, update_settings, list_rotation, get_rotation_status"
                     }
             except Exception as e:
-                await self.hybrid_log(ctx, "error", f"Failed to {action} rotation for '{item_name}' - Error: {str(e)}")
+                await self.dual_log(ctx, "error", f"Failed to {action} rotation for '{item_name}' - Error: {str(e)}")
                 return {
                     "success": False,
                     "error": str(e),
                     "message": f"Failed to {action} rotation for '{item_name}'"
                 }
 
-    async def _set_rotation_settings(self, item_name: str, auto_rotate: bool, rotation_interval: Optional[str],
+    async def _set_rotation_settings(self, ctx: Context, item_name: str, auto_rotate: bool, rotation_interval: Optional[str],
                                    rotation_event_in: Optional[List[str]], rotate_after_disconnect: Optional[str],
                                    rotation_window: Optional[str], rotation_schedule: Optional[str], json: bool) -> Dict[str, Any]:
         """Set rotation settings for an item."""
-        self.log("info", f"Setting rotation settings for item: {item_name}")
+        await self.dual_log(ctx, "info", f"Setting rotation settings for item: {item_name}")
         # Convert rotation_interval from string (days) to integer (days) for client call
         rotation_interval_int = None
         if rotation_interval is not None:
@@ -153,10 +159,11 @@ class ManageRotationTools(BaseThalesCDSPCSMTool):
             }
         }
 
-    async def _update_rotation_settings(self, item_name: str, auto_rotate: bool, rotation_interval: Optional[str],
+    async def _update_rotation_settings(self, ctx: Context, item_name: str, auto_rotate: bool, rotation_interval: Optional[str],
                                       rotation_event_in: Optional[List[str]], rotate_after_disconnect: Optional[str],
                                       rotation_window: Optional[str], rotation_schedule: Optional[str], json: bool) -> Dict[str, Any]:
         """Update existing rotation settings for an item."""
+        await self.dual_log(ctx, "info", f"Updating rotation settings for item: {item_name}")
         # Convert rotation_interval from string (days) to integer (days) for client call
         rotation_interval_int = None
         if rotation_interval is not None:
@@ -219,7 +226,7 @@ class ManageRotationTools(BaseThalesCDSPCSMTool):
         """Get rotation status for a specific item."""
         # Get item details to check rotation status
         try:
-            # Try to get item details
+                # Try to get item details
             item_details = await self.client.get_item(item_name)
             
             rotation_status = {

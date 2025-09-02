@@ -80,4 +80,81 @@ Execute this workflow:
 3. The tool will create the authentication method
 4. Return the new auth method details and credentials
 
-This establishes a new email-based authentication method named '{auth_method_name}' with email '{email_address}' in your Akeyless vault.""" 
+This establishes a new email-based authentication method named '{auth_method_name}' with email '{email_address}' in your Akeyless vault."""
+
+
+async def develop_or_secure_app(
+        app_context: str = Field(description="Context about the app - either 'new app' description or 'existing app' details to secure. For new apps, describe the app type, purpose, and requirements. For existing apps, provide details about the codebase to secure."),
+        ctx: Context = None
+    ) -> str:
+    """Intelligently develop a new app or secure an existing app with CipherTrust integration."""
+    
+    return f"""🔐 INTELLIGENT APP DEVELOPMENT & SECURITY MIGRATION PROMPT
+
+This prompt will automatically determine whether you're creating a NEW app or securing an EXISTING app, then provide the appropriate solution.
+
+📋 APP CONTEXT PROVIDED:
+{app_context}
+
+🎯 INTELLIGENT DETECTION LOGIC:
+
+The AI assistant will analyze your request and determine the scenario:
+
+1. **NEW APP CREATION** - If you mention:
+   - "create", "build", "develop", "new app", "start from scratch"
+   - No existing codebase context
+   - Building something completely new
+
+2. **EXISTING APP SECURITY** - If you mention:
+   - "secure", "migrate", "existing", "current app", "hardcoded secrets"
+   - Reference to existing code or files
+   - Want to move secrets to CipherTrust
+
+🔄 EXECUTION WORKFLOW:
+
+**For NEW APP CREATION:**
+1. Use get_api_reference tool with api_endpoint='workflow'
+2. Generate complete Python implementation (default language)
+3. Create application structure with CipherTrust integration
+4. Provide setup and testing instructions
+
+**For EXISTING APP SECURITY:**
+1. Scan codebase for hardcoded secrets using intelligent detection
+2. Infer programming language from codebase structure
+3. Categorize secrets by type (key-value pairs vs standalone)
+4. Use manage_secrets tool to create CipherTrust secrets
+5. Generate migration report and updated code
+6. Provide testing and validation instructions
+
+🔍 SECRET DETECTION PATTERNS:
+
+The AI will scan for:
+- Environment variables (os.getenv, process.env)
+- Hardcoded strings with keywords (key, secret, password, token, api_key)
+- Configuration files (.env, config.json, settings.py)
+- Database connection strings
+- API credentials and endpoints
+
+📊 SECRET TYPE CLASSIFICATION:
+
+**Key-Value Pairs (JSON format):**
+- AWS: access_key_id + secret_access_key
+- Database: username + password + host + port
+- OAuth: client_id + client_secret
+- API: api_key + api_secret
+
+**Standalone Secrets (Text format):**
+- Single passwords
+- Individual tokens
+- Connection strings
+- Certificate data
+
+🚀 NEXT STEPS:
+
+The AI assistant will now:
+1. Analyze your request to determine the scenario
+2. Execute the appropriate workflow
+3. Provide comprehensive implementation or migration solution
+4. Include testing and validation instructions
+
+This ensures you get exactly what you need - whether building a new secure app or migrating existing secrets to enterprise-grade security with CipherTrust.""" 
