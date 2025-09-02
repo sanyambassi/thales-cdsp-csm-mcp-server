@@ -104,6 +104,7 @@ await manage_targets(action="get", name="mysql-database", target_version=2)
 
 # Get target details with JSON output
 await manage_targets(action="get", name="mysql-database", json=True)
+```
 
 ### Create new targets
 ```python

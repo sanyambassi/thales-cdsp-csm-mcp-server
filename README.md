@@ -123,7 +123,7 @@ pip install fastmcp
 python -c "import fastmcp; print(f'fastmcp version: {fastmcp.__version__}')"
 ```
 
-## 🚀 **What this mCP server features**
+## 🚀 **What this MCP server features**
 
 - **Secrets Management**: Create, read, update, delete secrets
 - **DFC Key Management**: DFC encryption keys (AES, RSA)
