@@ -1,7 +1,5 @@
 # Thales CSM MCP Server
 
-[![Trust Score](https://archestra.ai/mcp-catalog/api/badge/quality/sanyambassi/thales-cdsp-csm-mcp-server)](https://archestra.ai/mcp-catalog/sanyambassi__thales-cdsp-csm-mcp-server)
-
 Simple MCP server for Thales CipherTrust Secrets Management, powered by Akeyless.
 
 ## 🎬 **Demo Videos**
